@@ -1,30 +1,32 @@
-#include <iostream>
+#include <shell/shell.h>
 #include "../SQLite/sqlite3.h"
 
 
-using namespace std;
+static int check_exists(void *NotUsed, int argc, char **argv, char **azColName) {
+
+}
+
+bool init_db(sqlite3* db)
+{
+    if (!sqlite3_open("data.db", &db))
+        return false;
+    char *zErrMsg = nullptr;
+    const char* sql = "SELECT name FROM sqlite_master WHERE type='table';";
+    sqlite3_exec(db, sql, check_exists, nullptr, &zErrMsg);
+
+    return true;
+}
 
 int main()
 {
-    // Pointer to SQLite connection
-    sqlite3* db;
+    sqlite3* db = nullptr;
 
-    // Save the connection result
-    int exit = 0;
-    exit = sqlite3_open("example.db", &db);
+    if (init_db(db)) {
 
-    // Test if there was an error
-    if (exit) {
+        shell_loop();
 
-        cout << "DB Open Error: " << sqlite3_errmsg(db) << endl;
-
-    } else {
-
-        cout << "Opened Database Successfully!" << endl;
+        sqlite3_close(db);
     }
 
-    // Close the connection
-    sqlite3_close(db);
-
-    return (0);
+    return 0;
 }
