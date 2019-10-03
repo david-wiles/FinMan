@@ -1,6 +1,5 @@
 #include <shell/shell.h>
-#include "../SQLite/sqlite3.h"
-
+#include <shell/auth.h>
 
 static int check_exists(void *NotUsed, int argc, char **argv, char **azColName) {
 
@@ -23,7 +22,9 @@ int main()
 
     if (init_db(db)) {
 
-        shell_loop();
+        char* username = nullptr;
+        authenticate(db, username);
+        loop(username);
 
         sqlite3_close(db);
     }
