@@ -1,5 +1,5 @@
-#include <shell/shell.h>
-#include <shell/auth.h>
+#include <shell/Shell.h>
+#include <shell/Auth.h>
 
 static int check_exists(void *NotUsed, int argc, char **argv, char **azColName) {
 
@@ -22,9 +22,9 @@ int main()
 
     if (init_db(db)) {
 
-        char* username = nullptr;
-        authenticate(db, username);
-        loop(username);
+        Auth::authenticate(db);
+
+        Shell::loop(Auth::username);
 
         sqlite3_close(db);
     }
