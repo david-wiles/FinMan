@@ -4,46 +4,64 @@
 #include "db/SQLite3.h"
 
 
+SQLite3* SQLite3::instance = nullptr;
+
 SQLite3::SQLite3()
 {
     this->db_instance = nullptr;
-    if (!sqlite3_open("data.db", &this->db_instance))
+    this->err = nullptr;
+
+    if (sqlite3_open("../../../data.db", &this->db_instance) != SQLITE_OK)
         throw std::exception();
 }
 
 SQLite3* SQLite3::getInstance()
 {
+    // Checking if the db_instance pointer is null should have the effect of checking if the instance has been set
     if (SQLite3::instance == nullptr) {
         SQLite3::instance = new SQLite3();
     }
     return SQLite3::instance;
 }
 
-// Callback for init db query. Main argument is a map of table names and a boolean value indicating if the table was
-// seen in the result
-//int check_tables(void* table_names, int argc, char ** argv, char ** azColName) {
-//    std::unordered_map<std::string, bool>* tables = static_cast<std::unordered_map<std::string, bool> *>(table_names);
-//    tables->at(std::string(argv[0])) = true;
-//}
-//
-//void SQLite3::init_db()
-//{
-//    char sql[] = "SELECT name FROM sqlite_master WHERE type='table';";
-//    this->err = nullptr;
-//
-//    std::unordered_map<std::string, bool>* tables = new std::unordered_map<std::string, bool>({
-//        {"auth_user", false},
-//        {"transaction", false}
-//        // Add the rest of the tables
-//    });
-//
-//    if (sqlite3_exec(this->db_instance, sql, check_tables, tables, &this->err) == SQLITE_OK) {
-//        // Check if all tables were seen
-//        for (const auto& itr: *tables) {
-//
-//        }
-//    }
-//}
+// Callback for init db query, sets tables seen to true in tables map
+int check_tables(void* table_names, int argc, char ** argv, char ** azColName) {
+    auto* tables = static_cast<std::unordered_map<std::string, bool> *>(table_names);
+    tables->at(std::string(argv[0])) = true;
+    return 0;
+}
+
+void SQLite3::init_db()
+{
+    char sql[] = "SELECT name FROM sqlite_master WHERE type='table';";
+    this->err = nullptr;
+
+    auto* tables = new std::unordered_map<std::string, bool>({
+        {"auth_user", false},
+        {"transaction", false}
+        // Add the rest of the tables
+    });
+
+    if (sqlite3_exec(this->db_instance, sql, check_tables, tables, &this->err) == SQLITE_OK) {
+        bool initialized = true;
+
+        // TODO how to check if only one (or more) tables need to be initialized, as opposed to recreating the db
+
+        // Check if all tables were seen
+        for (const auto& itr: *tables) {
+            if (itr.second == false)
+                initialized = false;
+        }
+
+        if (!initialized) {
+
+            // Get SQL from file
+
+            if (sqlite3_exec(this->db_instance, sql, nullptr, nullptr, &this->err) != SQLITE_OK)
+                throw std::exception();
+        }
+    }
+}
 
 std::vector<std::vector<std::string>>* SQLite3::execute(std::string sql, std::vector<std::string>* params)
 {

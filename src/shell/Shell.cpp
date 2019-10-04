@@ -3,14 +3,13 @@
 #include <iostream>
 
 
-void Shell::loop(const char* username)
+void Shell::loop()
 {
     int status;
-    std::string auth_user(username);
 
     do {
         std::cout << "FinMan > ";
-        status = Shell::execute(auth_user, Shell::get_args());
+        status = this->execute(Shell::get_args());
     } while (status);
 
 }
@@ -38,14 +37,14 @@ std::vector<std::string> Shell::get_args()
     return args;
 }
 
-int Shell::execute(const std::string username, const std::vector<std::string> args)
+int Shell::execute(const std::vector<std::string>& args)
 {
     if (args.empty())
         return 1;
 
     for (int i = 0; i < NUM_COMMANDS; ++i) {
         if (args[0] == Shell::commands_str[i]) {
-            return (*Shell::commands[i])(username, args);
+            return (*Shell::commands[i])(this->_username, args);
         }
     }
 

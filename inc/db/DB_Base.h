@@ -5,18 +5,9 @@
 class DB_Base
 {
 public:
-    DB_Base();
-
-    virtual void init_db();
-
-    virtual ~DB_Base();
+    DB_Base() = default;
+    virtual void init_db() = 0;
+    virtual ~DB_Base() = default;
 };
-
-class DB_Result
-{
-public:
-
-};
-
 
 #endif //FINMAN_DB_BASE_H

@@ -4,8 +4,9 @@
 
 #include <string>
 #include <vector>
-#include "../../SQLite/sqlite3.h"
 #include "DB_Base.h"
+#include "../../lib/sqlite3/sqlite3.h"
+
 
 class SQLite3 : public DB_Base
 {
@@ -43,18 +44,13 @@ private:
      * Private constructor which opens a database connection
      */
     SQLite3();
-    /**
-     * The instance of the database object
-     */
+
+    // The instance of the database object
     static SQLite3* instance;
-    /**
-     * The instance of a sqlite3 struct to be shared across the process
-     */
+    // The instance of a sqlite3 struct to be shared across the process
     sqlite3* db_instance;
-    /**
-     * Instance of error message to be referenced in queries
-     */
-     char* err;
+    //Instance of error message to be referenced in queries
+    char* err;
 };
 
 

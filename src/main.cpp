@@ -10,10 +10,12 @@ int main()
     database->init_db();
 
     // Authenticate user
-    Auth::authenticate(database);
+    Auth auth(database);
+    auth.authenticate();
 
     // Begin main loop
-    Shell::loop(Auth::username);
+    Shell shell(auth.get_username());
+    shell.loop();
 
     // Close database connection
     delete database;

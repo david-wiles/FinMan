@@ -5,26 +5,25 @@
 #include "shell/Auth.h"
 
 
-static int create_user(void *new_username, int argc, char **argv, char **azColName);
-static int auth_user(void *expected_username, int col_count, char **col_data, char **col_name);
-
-
-void Auth::authenticate(sqlite3* db)
+void Auth::authenticate()
 {
     std::cout << "Log in? (y/n), press n to create a new user.";
 
     if (getchar() == 'y') {
-        existing_user(db);
+        existing_user();
     } else {
-        new_user(db);
+        new_user();
     }
 }
 
+std::string Auth::get_username()
+{
+    return std::string(this->_username);
+}
 
-void Auth::existing_user(sqlite3* db)
+void Auth::existing_user()
 {
     while (true) {
-        char *zErrMsg = nullptr;
         char sql[] = "SELECT COUNT(*), username FROM auth_user WHERE username = ? AND password = ?;";
 
         std::cout << "Username: ";
@@ -39,13 +38,14 @@ void Auth::existing_user(sqlite3* db)
         unsigned char md5[MD5_DIGEST_LENGTH];
         MD5((unsigned char *) pass_arr, password.size(), md5);
 
-        sqlite3_exec(db, sql, auth_user, (void *) user_string.c_str(), &zErrMsg);
-        if (Auth::username != nullptr)
+        std::vector<std::string> params({user_string, std::string((char*)md5)});
+        this->_database->execute(sql, &params);
+        if (this->_username != nullptr)
             break;
     }
 }
 
-void Auth::new_user(sqlite3* db)
+void Auth::new_user()
 {
     while (true) {
         char *zErrMsg = nullptr;
@@ -68,8 +68,7 @@ void Auth::new_user(sqlite3* db)
             unsigned char md5[MD5_DIGEST_LENGTH];
             MD5((unsigned char *) pass_arr, password.size(), md5);
 
-            sqlite3_exec(db, sql, create_user, (void*) user_string.c_str(), &zErrMsg);
-            if (Auth::username != nullptr)
+            if (this->_username != nullptr)
                 break;
         } else {
             std::cout << "Passwords do not match." << std::endl;
@@ -79,21 +78,5 @@ void Auth::new_user(sqlite3* db)
 
 void Auth::set_username(char* name)
 {
-    Auth::username = name;
-}
-
-static int create_user(void *new_username, int argc, char **argv, char **azColName)
-{
-
-}
-
-static int auth_user(void *expected_username, int col_count, char **col_data, char **col_name)
-{
-    char* username = static_cast<char *>(expected_username);
-    char expected = '1';
-    if (col_data[0] == &expected && col_data[1] == username) {
-        Auth::set_username(username);
-    }
-
-    return 0;
+    this->_username = name;
 }
