@@ -11,7 +11,7 @@ SQLite3::SQLite3()
     this->db_instance = nullptr;
     this->err = nullptr;
 
-    if (sqlite3_open("../../../data.db", &this->db_instance) != SQLITE_OK)
+    if (sqlite3_open("../../data.db", &this->db_instance) != SQLITE_OK)
         throw std::exception();
 }
 

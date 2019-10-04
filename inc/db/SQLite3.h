@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include "DB_Base.h"
-#include "../../lib/sqlite3/sqlite3.h"
+#include <sqlite3.h>
 
 
 class SQLite3 : public DB_Base
