@@ -5,6 +5,10 @@
 #include "shell/Auth.h"
 
 
+static int create_user(void *new_username, int argc, char **argv, char **azColName);
+static int auth_user(void *expected_username, int col_count, char **col_data, char **col_name);
+
+
 void Auth::authenticate(sqlite3* db)
 {
     std::cout << "Log in? (y/n), press n to create a new user.";
@@ -16,14 +20,6 @@ void Auth::authenticate(sqlite3* db)
     }
 }
 
-static int auth_user(void *expected_username, int col_count, char **col_data, char **col_name)
-{
-    char* username = static_cast<char *>(expected_username);
-    char expected = '1';
-    if (col_data[0] == &expected && col_data[1] == username) {
-        Auth::set_username(username);
-    }
-}
 
 void Auth::existing_user(sqlite3* db)
 {
@@ -47,11 +43,6 @@ void Auth::existing_user(sqlite3* db)
         if (Auth::username != nullptr)
             break;
     }
-}
-
-static int create_user(void *new_username, int argc, char **argv, char **azColName)
-{
-
 }
 
 void Auth::new_user(sqlite3* db)
@@ -89,4 +80,20 @@ void Auth::new_user(sqlite3* db)
 void Auth::set_username(char* name)
 {
     Auth::username = name;
+}
+
+static int create_user(void *new_username, int argc, char **argv, char **azColName)
+{
+
+}
+
+static int auth_user(void *expected_username, int col_count, char **col_data, char **col_name)
+{
+    char* username = static_cast<char *>(expected_username);
+    char expected = '1';
+    if (col_data[0] == &expected && col_data[1] == username) {
+        Auth::set_username(username);
+    }
+
+    return 0;
 }

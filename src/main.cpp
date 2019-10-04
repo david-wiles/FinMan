@@ -1,33 +1,22 @@
 #include <shell/Shell.h>
 #include <shell/Auth.h>
+#include <db/SQLite3.h>
 
-static int check_exists(void *NotUsed, int argc, char **argv, char **azColName) {
-
-}
-
-bool init_db(sqlite3* db)
-{
-    if (!sqlite3_open("data.db", &db))
-        return false;
-    char *zErrMsg = nullptr;
-    const char* sql = "SELECT name FROM sqlite_master WHERE type='table';";
-    sqlite3_exec(db, sql, check_exists, nullptr, &zErrMsg);
-
-    return true;
-}
 
 int main()
 {
-    sqlite3* db = nullptr;
+    // Initialize database
+    SQLite3* database = SQLite3::getInstance();
+    database->init_db();
 
-    if (init_db(db)) {
+    // Authenticate user
+    Auth::authenticate(database);
 
-        Auth::authenticate(db);
+    // Begin main loop
+    Shell::loop(Auth::username);
 
-        Shell::loop(Auth::username);
-
-        sqlite3_close(db);
-    }
+    // Close database connection
+    delete database;
 
     return 0;
 }
