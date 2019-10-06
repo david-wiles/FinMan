@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "DB_Base.h"
+#include "DB_Result.h"
 #include <sqlite3.h>
 
 
@@ -24,15 +25,14 @@ public:
 
     /**
      * Convenience function for executing a query with a prepared statement.  The SQL string should contain question
-     * marks (?) as placeholders for the values to be inserted into the prepared statement.
+     * marks (?#) as placeholders for the values to be inserted into the prepared statement.
      *
      * @param sql       The SQL statement to be executed, with ?'s as placeholders
      * @param params    An array (vector) of parameters to replace ?'s in the SQL statement. The index of the parameter
      *                  should correspond to the index of the placeholder
-     * @return          A 2-d array of rows and columns returned by the query. The first row will always be the column
-     *                  names, even if no data was returned.
+     * @return          A DB result object containing column names returned and rows returned
      */
-    std::vector<std::vector<std::string>>* execute(std::string sql, std::vector<std::string> *params);
+    DB_Result* execute(std::string sql, std::vector<std::string> *params) override;
 
     /**
      * Close the database connection and free all memory associated with the database instance

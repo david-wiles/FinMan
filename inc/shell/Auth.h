@@ -44,7 +44,25 @@ private:
      *
      * @param name  Username to set
      */
-    void set_username(char* name);
+    void set_username(const char* name);
+
+    /**
+     * Create a hashed string based on a char string password
+     *
+     * @param password  Password to hash as a char array
+     * @return          String hashed password
+     */
+    static std::string hash_password(std::string password);
+
+    /**
+     * Query for a username and password match.  If a match is found, the instance's username is set to the queried
+     * username.
+     *
+     * @param username  Username as a string
+     * @param pass_hash Password as a string, to be hashed in the function
+     * @return          Boolean indicating if the user was found.
+     */
+    bool query_for_user(std::string username, std::string password);
 };
 
 #endif //FINMAN_AUTH_H
