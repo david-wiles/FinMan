@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <stdexcept>
+#include <iostream>
 
 #include "db/SQLite3.h"
 
@@ -12,8 +13,8 @@ SQLite3::SQLite3()
     this->db_instance = nullptr;
     this->err = nullptr;
 
-    if (sqlite3_open("../data.db", &this->db_instance) != SQLITE_OK)
-        throw std::exception();
+    if (sqlite3_open("../assets/data.db", &this->db_instance) != SQLITE_OK)
+        throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
 SQLite3* SQLite3::getInstance()
@@ -28,7 +29,14 @@ SQLite3* SQLite3::getInstance()
 // Callback for init db query, sets tables seen to true in tables map
 int check_tables(void* table_names, int argc, char ** argv, char ** azColName) {
     auto* tables = static_cast<std::unordered_map<std::string, bool> *>(table_names);
-    tables->at(std::string(argv[0])) = true;
+    if (argv[0] != nullptr) {
+        try {
+            tables->at(std::string(argv[0])) = true;
+        } catch (std::out_of_range& ex) {
+            // DEBUG
+            std::cerr << "Unknown table encountered." << ex.what() << std::endl;
+        }
+    }
     return 0;
 }
 
@@ -39,6 +47,7 @@ void SQLite3::init_db()
 
     auto* tables = new std::unordered_map<std::string, bool>({
         {"auth_user", false},
+        {"sqlite_sequence", false}
         // Add the rest of the tables
     });
 
@@ -54,7 +63,7 @@ void SQLite3::init_db()
 
         if (!initialized) {
             // Get SQL from file
-            std::ifstream init_file("db.sql");
+            std::ifstream init_file("../assets/db.sql");
             std::string init_sql((std::istreambuf_iterator<char>(init_file)), (std::istreambuf_iterator<char>()));
 
             // Execute initialization sql
@@ -68,14 +77,14 @@ DB_Result* SQLite3::execute(std::string sql, std::vector<std::string>* params)
 {
     // Create a prepared statement from the sql string
     sqlite3_stmt* stmt = nullptr;
-    int status = sqlite3_prepare_v2(this->db_instance, (const char*) sql.c_str(), -1, &stmt, nullptr);
+    this->err = nullptr;
 
     // Bind parameters to prepared statement
-    if (status == SQLITE_OK) {
+    if (sqlite3_prepare_v2(this->db_instance, (const char*) sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         int i = 1;
         for (const auto &itr: *params) {
             const char* str = itr.c_str();
-            sqlite3_bind_text(stmt, i++, str, sizeof(str), SQLITE_STATIC);
+            sqlite3_bind_text(stmt, i++, str, itr.size(), SQLITE_STATIC);
         }
     } else {
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
@@ -87,14 +96,14 @@ DB_Result* SQLite3::execute(std::string sql, std::vector<std::string>* params)
     int num_cols = sqlite3_column_count(stmt);
     auto* col_names = new std::vector<std::string>(num_cols);
     for (int i = 0; i < num_cols; ++i)
-        col_names->emplace_back((char *) sqlite3_column_name(stmt, i));
+        col_names->at(i) = (char *) sqlite3_column_name(stmt, i);
 
     // If rows were returned, add it to the return array
     auto* results = new std::vector<std::vector<std::string>>;
     while (step != SQLITE_DONE) {
         auto* row = new std::vector<std::string>(num_cols);
         for (int i = 0; i < num_cols; ++i)
-            row->emplace_back((char *)sqlite3_column_text(stmt, i));
+            row->at(i) = (char *) sqlite3_column_text(stmt, i);
         results->push_back(*row);
         step = sqlite3_step(stmt);
     }
@@ -107,5 +116,4 @@ DB_Result* SQLite3::execute(std::string sql, std::vector<std::string>* params)
 SQLite3::~SQLite3()
 {
     sqlite3_close(this->db_instance);
-    delete SQLite3::instance;
 }
