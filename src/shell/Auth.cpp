@@ -1,7 +1,6 @@
 #include <openssl/sha.h>
 #include <string>
 #include <iostream>
-#include <utility>
 #include <sstream>
 #include <iomanip>
 
@@ -52,7 +51,7 @@ bool Auth::query_for_user(std::string username, std::string password)
     std::string hash = hash_password(password);
 
     std::vector<std::string> params{username, hash};
-    DB_Result* res = this->_database->execute(sql, &params);
+    DB_Result* res = SQLite3::getInstance()->execute(std::string(sql), &params);
 
     std::vector<std::string> expected{"1", params.at(0)};
 
@@ -102,7 +101,7 @@ void Auth::new_user()
             std::string hash = hash_password(password);
 
             std::vector<std::string> params{user_string, hash};
-            this->_database->execute(sql, &params);
+            SQLite3::getInstance()->execute(std::string(sql), &params);
 
             if (query_for_user(user_string, password))
                 break;

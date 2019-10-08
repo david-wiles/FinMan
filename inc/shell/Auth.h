@@ -7,7 +7,7 @@
 class Auth
 {
 public:
-    explicit Auth(SQLite3* database) : _database(database), _username(nullptr) {};
+    explicit Auth() : _username(nullptr) {};
 
     /**
      * Prompt the user to either log in or create an account, and save the resulting username
@@ -26,8 +26,6 @@ public:
 private:
     // Currently authenticated user's username
     char* _username;
-    // Pointer to the database instance
-    SQLite3* _database;
 
     /**
      * Handle existing user login
