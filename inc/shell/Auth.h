@@ -3,14 +3,16 @@
 
 #include <db/SQLite3.h>
 
-
+/**
+ * Auth should handle authentication across the site
+ */
 class Auth
 {
 public:
-    explicit Auth() : _username(nullptr) {};
+    Auth() : _username(nullptr) {};
 
     /**
-     * Prompt the user to either log in or create an account, and save the resulting username
+     * Prompt the user to either log in or create an account and save the resulting username
      */
     void authenticate();
 
@@ -19,9 +21,9 @@ public:
      *
      * @return  String username
      */
-    std::string get_username();
+    inline std::string get_username() const { return this->_username; };
 
-    ~Auth() = default;
+    ~Auth() { delete(_username); };
 
 private:
     // Currently authenticated user's username
@@ -42,13 +44,13 @@ private:
      *
      * @param name  Username to set
      */
-    void set_username(const char* name);
+    void set_username(const char* name) { this->_username = const_cast<char *>(name); }
 
     /**
-     * Create a hashed string based on a char string password
+     * Create a password hash based on a plain text password
      *
      * @param password  Password to hash as a char array
-     * @return          String hashed password
+     * @return          hashed password as a string
      */
     static std::string hash_password(std::string password);
 

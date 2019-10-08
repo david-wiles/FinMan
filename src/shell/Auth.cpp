@@ -18,23 +18,14 @@ void Auth::authenticate()
     }
 }
 
-std::string Auth::get_username()
-{
-    return std::string(this->_username);
-}
-
-void Auth::set_username(const char* name)
-{
-    this->_username = const_cast<char *>(name);
-}
-
 std::string Auth::hash_password(std::string password)
 {
+    // Create hex hash
     const char *pass_arr = password.c_str();
     unsigned char sha1[SHA_DIGEST_LENGTH + 1];
     SHA1((unsigned char *) pass_arr, password.size(), sha1);
 
-    // Convert to string (credit to Nayfe on StackOverflow ... https://stackoverflow.com/questions/918676/generate-sha-hash-in-c-using-openssl-library)
+    // Convert hashed bytes to char string
     std::stringstream shastr;
     shastr << std::hex << std::setfill('0');
     for (const auto& byte: sha1)
@@ -46,12 +37,12 @@ std::string Auth::hash_password(std::string password)
 
 bool Auth::query_for_user(std::string username, std::string password)
 {
-    char sql[] = "SELECT COUNT(*), username FROM auth_user WHERE username = ?1 AND pass_hash = ?2;";
+    std::string sql = "SELECT COUNT(*), username FROM auth_user WHERE username = ?1 AND pass_hash = ?2;";
 
     std::string hash = hash_password(password);
 
     std::vector<std::string> params{username, hash};
-    DB_Result* res = SQLite3::getInstance()->execute(std::string(sql), &params);
+    DB_Result* res = SQLite3::getInstance()->execute(sql, &params);
 
     std::vector<std::string> expected{"1", params.at(0)};
 
@@ -82,7 +73,7 @@ void Auth::existing_user()
 void Auth::new_user()
 {
     while (true) {
-        char sql[] = "INSERT INTO auth_user (username, pass_hash) VALUES (?1, ?2);";
+        std::string sql = "INSERT INTO auth_user (username, pass_hash) VALUES (?1, ?2);";
 
         std::cout << "Username: ";
         std::string user_string;
@@ -101,7 +92,7 @@ void Auth::new_user()
             std::string hash = hash_password(password);
 
             std::vector<std::string> params{user_string, hash};
-            SQLite3::getInstance()->execute(std::string(sql), &params);
+            SQLite3::getInstance()->execute(sql, &params);
 
             if (query_for_user(user_string, password))
                 break;

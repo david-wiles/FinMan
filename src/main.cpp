@@ -6,12 +6,12 @@
 int main()
 {
     // Initialize database
-    SQLite3* database = SQLite3::getInstance();
+    DB_Base* database = SQLite3::getInstance();
 
     database->init_db();
 
     // Authenticate user
-    Auth auth(database);
+    Auth auth;
 
     auth.authenticate();
 

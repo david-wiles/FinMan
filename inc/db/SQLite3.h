@@ -16,7 +16,7 @@ public:
      * Get a reference to the sqlite3 instance currently in use
      * @return SQLite3 object initialized to the proper database
      */
-    static SQLite3* getInstance();
+    static DB_Base* getInstance();
 
     /**
      * Execute commands to ensure that the proper tables are present in the database
@@ -34,19 +34,10 @@ public:
      */
     DB_Result* execute(std::string sql, std::vector<std::string> *params) override;
 
-    /**
-     * Close the database connection and free all memory associated with the database instance
-     */
     ~SQLite3() override;
 
 private:
-    /**
-     * Private constructor which opens a database connection
-     */
     SQLite3();
-
-    // The instance of the database object
-    static SQLite3* instance;
     // The instance of a sqlite3 struct to be shared across the process
     sqlite3* db_instance;
     //Instance of error message to be referenced in queries
