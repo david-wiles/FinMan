@@ -34,18 +34,26 @@ std::vector<std::string>* Shell::get_args()
     return args;
 }
 
-int hello(const std::string username, const std::vector<std::string>* unused)
+int hello(const std::string username, const std::vector<std::string>* unused_params)
 {
     std::cout << "Hello, " << username << "!" << std::endl;
     return 0;
 }
 
+int goodbye(const std::string unused_user, const std::vector<std::string>* unused_params)
+{
+    std::cout << "Goodbye" << std::endl;
+    return 1;
+}
+
 const std::string commands_str[] = {
-        std::string("hello")
+    std::string("hello"),
+    std::string("goodbye")
 };
 
 int (*commands[NUM_COMMANDS]) (const std::string, const std::vector<std::string>*) = {
-        &hello
+    &hello,
+    &goodbye,
 };
 
 int Shell::execute(const std::vector<std::string>* args)

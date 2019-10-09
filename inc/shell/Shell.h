@@ -7,7 +7,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define NUM_COMMANDS 1
+#define NUM_COMMANDS 2
 
 
 class Shell
@@ -45,7 +45,6 @@ private:
     */
     int execute(const std::vector<std::string>* args);
 
-    // TODO commands
 };
 
 #endif //FINMAN_SHELL_H
