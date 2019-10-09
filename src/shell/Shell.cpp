@@ -34,30 +34,31 @@ std::vector<std::string>* Shell::get_args()
     return args;
 }
 
+int hello(const std::string username, const std::vector<std::string>* unused)
+{
+    std::cout << "Hello, " << username << "!" << std::endl;
+    return 0;
+}
+
+const std::string commands_str[] = {
+        std::string("hello")
+};
+
+int (*commands[NUM_COMMANDS]) (const std::string, const std::vector<std::string>*) = {
+        &hello
+};
+
 int Shell::execute(const std::vector<std::string>* args)
 {
     if (args->empty())
         return 0;
 
     for (int i = 0; i < NUM_COMMANDS; ++i) {
-        if (args->at(0) == Shell::commands_str[i]) {
-            return (*Shell::commands[i])(this->_username, args);
+        if (args->at(0) == commands_str[i]) {
+            return (*commands[i])(this->_username, args);
         }
     }
 
     return 0;
 }
 
-int Shell::hello(const std::string username, const std::vector<std::string>* unused)
-{
-    std::cout << "Hello, " << username << "!" << std::endl;
-    return 0;
-}
-
-const std::string Shell::commands_str[] = {
-        std::string("hello")
-};
-
-int (*Shell::commands[NUM_COMMANDS]) (const std::string, const std::vector<std::string>*) = {
-        &Shell::hello
-};

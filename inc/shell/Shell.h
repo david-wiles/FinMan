@@ -45,22 +45,6 @@ private:
     */
     int execute(const std::vector<std::string>* args);
 
-    /**
-     * Greet the user, if they say hello
-     *
-     * @param username  The logged in user
-     * @param unused
-     * @return          Return status
-     */
-    static int hello(std::string username, const std::vector<std::string>* unused);
-
-    /**
-     * Arrays to contain the possible commands a user can enter. One array contains string representation, and the
-     * other contains function pointers.
-     */
-    static const std::string commands_str[];
-    static int (*commands[]) (const std::string, const std::vector<std::string>*);
-
     // TODO commands
 };
 
