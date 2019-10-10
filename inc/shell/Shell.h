@@ -7,8 +7,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#define NUM_COMMANDS 2
-
 
 class Shell
 {
