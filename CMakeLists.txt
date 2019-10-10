@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.10)
 project(FinMan)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${FinMan_SOURCE_DIR})
@@ -11,8 +11,11 @@ file(GLOB_RECURSE sources src/*.c src/*.cpp)
 add_executable(FinMan ${sources})
 
 # Link libraries
-find_package(SQLite3)
-include_directories(${SQLITE3_INCLUDE_DIRS})
+# find_package(SQLite3)
+# include_directories(${SQLITE3_INCLUDE_DIRS})
+
+include_directories(/usr/include)
+link_directories(/usr/lib)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
