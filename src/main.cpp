@@ -1,12 +1,12 @@
 #include <shell/Shell.h>
 #include <shell/Auth.h>
-#include <model/SQLite3QueryBuilder.h>
+#include <model/SQLite3DB.h>
 
 
 int main()
 {
     // Initialize database
-    AbstractQueryBuilder* database = SQLite3QueryBuilder::getInstance();
+    AbstractDB* database = SQLite3DB::getInstance();
     database->init_db();
 
     // Begin main loop

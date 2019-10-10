@@ -19,13 +19,13 @@ Auth::Auth(std::string username, std::string password) : _username()
 
 std::string Auth::authenticate()
 {
-    std::cout << "Log in? (y/n), press n to create a new user.";
+    std::cout << "Press any key to log in. ('n' to create a new user).";
     std::string username;
 
-    if (getchar() == 'y') {
-        username = existing_user();
-    } else {
+    if (getchar() == 'n') {
         username = new_user();
+    } else {
+        username = existing_user();
     }
 
     return username;
@@ -61,11 +61,14 @@ bool Auth::query_for_user(std::string username, std::string password)
     std::string hash = hash_password(std::move(password));
 
     std::vector<std::string> params{std::move(username), hash};
-    QueryResult* res = SQLite3QueryBuilder::getInstance()->execute(sql, &params);
+    QueryResult* res = SQLite3DB::getInstance()->query(sql, &params);
 
     std::vector<std::string> expected{"1", params.at(0)};
 
-    return *res->get_row(0) == expected;
+    bool found = *res->get_row(0) == expected;
+
+    delete(res);
+    return found;
 }
 
 std::string Auth::existing_user()
@@ -106,7 +109,7 @@ std::string Auth::new_user()
             std::string hash = hash_password(password);
 
             std::vector<std::string> params{username, hash};
-            SQLite3QueryBuilder::getInstance()->execute(sql, &params);
+            SQLite3DB::getInstance()->query(sql, &params);
 
             if (query_for_user(username, password))
                 return username;

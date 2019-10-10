@@ -1,7 +1,6 @@
 # Project exclude paths
 /cmake-build-debug/
-/cmake-build-release
 /.idea/
 /SQLite/
-/assets/data.db
+/assets/data/data.db
 /test/test.db

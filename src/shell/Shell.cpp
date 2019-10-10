@@ -1,15 +1,22 @@
 #include <shell/Shell.h>
 #include <sstream>
-#include <iostream>
 #include <controller/Controller.h>
 
+
+Shell::Shell(std::string username) : _username(username)
+{
+    // Print welcome message once user has been authenticated
+    std::string welcome("Hello");
+    std::cout << welcome << std::endl;
+    this->_prompt = username += "@FinMan > ";
+}
 
 void Shell::loop()
 {
     int status = 0;
 
     do {
-        status = this->execute(Shell::get_args());
+        status = Shell::execute(this->_username, Shell::get_args());
     } while (status == 0);
 
 }
@@ -35,11 +42,17 @@ std::vector<std::string>* Shell::get_args()
     return args;
 }
 
-int Shell::execute(const std::vector<std::string>* args)
+int Shell::execute(std::string username, const std::vector<std::string>* args)
 {
-    if (args->empty())
-        return 0;
+    int i = 0;
+    for (auto &itr: Controller::cmd_str_arr) {
+        if (args->at(0) == itr) {
+            return (*Controller::cmds[i])(username, args);
+        }
+        i++;
+    }
 
-    return Controller::execute(this->_username, args);
+    // TODO Print command not found message
 
+    return 0;
 }
