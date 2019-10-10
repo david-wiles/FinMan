@@ -3,22 +3,41 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <utility>
 
 #include "shell/Auth.h"
 
 
-void Auth::authenticate()
+Auth::Auth(std::string username, std::string password) : _username()
 {
-    std::cout << "Log in? (y/n), press n to create a new user.";
-
-    if (getchar() == 'y') {
-        existing_user();
-    } else {
-        new_user();
-    }
+    if (query_for_user(username, std::move(password)))
+        this->_username = username;
+    else
+        throw std::runtime_error("Could not authenticate user.");
 }
 
-std::string Auth::hash_password(std::string password)
+
+std::string Auth::authenticate()
+{
+    std::cout << "Log in? (y/n), press n to create a new user.";
+    std::string username;
+
+    if (getchar() == 'y') {
+        username = existing_user();
+    } else {
+        username = new_user();
+    }
+
+    return username;
+}
+
+/**
+ * Create a password hash based on a plain text password
+ *
+ * @param password  Password to hash as a char array
+ * @return          hashed password as a string
+ */
+std::string hash_password(std::string password)
 {
     // Create hex hash
     const char *pass_arr = password.c_str();
@@ -39,45 +58,40 @@ bool Auth::query_for_user(std::string username, std::string password)
 {
     std::string sql = "SELECT COUNT(*), username FROM auth_user WHERE username = ?1 AND pass_hash = ?2;";
 
-    std::string hash = hash_password(password);
+    std::string hash = hash_password(std::move(password));
 
-    std::vector<std::string> params{username, hash};
+    std::vector<std::string> params{std::move(username), hash};
     DB_Result* res = SQLite3::getInstance()->execute(sql, &params);
 
     std::vector<std::string> expected{"1", params.at(0)};
 
-    if (*res->get_row(0) == expected) {
-        set_username(username.c_str());
-        return true;
-    }
-
-    return false;
+    return *res->get_row(0) == expected;
 }
 
-void Auth::existing_user()
+std::string Auth::existing_user()
 {
     while (true) {
         std::cout << "Username: ";
-        std::string user_string;
-        std::cin >> user_string;
+        std::string username;
+        std::cin >> username;
 
         std::cout << "Password: ";
         std::string password;
         std::cin >> password;
 
-        if (query_for_user(user_string, password))
-            break;
+        if (query_for_user(username, password))
+            return username;
     }
 }
 
-void Auth::new_user()
+std::string Auth::new_user()
 {
     while (true) {
         std::string sql = "INSERT INTO auth_user (username, pass_hash) VALUES (?1, ?2);";
 
         std::cout << "Username: ";
-        std::string user_string;
-        std::cin >> user_string;
+        std::string username;
+        std::cin >> username;
 
         std::cout << "Password: ";
         std::string password;
@@ -91,11 +105,13 @@ void Auth::new_user()
         if (password == password2) {
             std::string hash = hash_password(password);
 
-            std::vector<std::string> params{user_string, hash};
+            std::vector<std::string> params{username, hash};
             SQLite3::getInstance()->execute(sql, &params);
 
-            if (query_for_user(user_string, password))
-                break;
+            if (query_for_user(username, password))
+                return username;
+            else
+                throw std::runtime_error("Could not create user.");
 
         } else {
             std::cout << "Passwords do not match." << std::endl;

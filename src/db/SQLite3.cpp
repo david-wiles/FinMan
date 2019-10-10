@@ -13,7 +13,7 @@ SQLite3::SQLite3()
     this->db_instance = nullptr;
     this->err = nullptr;
 
-    if (sqlite3_open("../assets/data.db", &this->db_instance) != SQLITE_OK)
+    if (sqlite3_open("assets/data.db", &this->db_instance) != SQLITE_OK)
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
@@ -62,7 +62,7 @@ void SQLite3::init_db()
 
         if (!initialized) {
             // Get SQL from file
-            std::ifstream init_file("../assets/db.sql");
+            std::ifstream init_file("assets/db.sql");
             std::string init_sql((std::istreambuf_iterator<char>(init_file)), (std::istreambuf_iterator<char>()));
 
             // Execute initialization sql

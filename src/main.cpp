@@ -7,17 +7,10 @@ int main()
 {
     // Initialize database
     DB_Base* database = SQLite3::getInstance();
-
     database->init_db();
 
-    // Authenticate user
-    Auth auth;
-
-    auth.authenticate();
-
     // Begin main loop
-    Shell shell(auth.get_username());
-
+    Shell shell(Auth::authenticate());
     shell.loop();
 
     // Close database connection

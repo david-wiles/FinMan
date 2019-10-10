@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(FinMan)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${FinMan_SOURCE_DIR})
+
 project(tests)
 
 include_directories(inc)
