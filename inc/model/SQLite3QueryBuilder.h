@@ -12,6 +12,8 @@
 class SQLite3QueryBuilder : public AbstractQueryBuilder
 {
 public:
+    explicit SQLite3QueryBuilder(std::string db_file);
+
     /**
      * Get a reference to the sqlite3 instance currently in use
      * @return SQLite3 object initialized to the proper database

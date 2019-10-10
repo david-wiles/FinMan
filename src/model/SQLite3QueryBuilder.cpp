@@ -17,6 +17,15 @@ SQLite3QueryBuilder::SQLite3QueryBuilder()
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
+SQLite3QueryBuilder::SQLite3QueryBuilder(std::string db_file)
+{
+    this->db_instance = nullptr;
+    this->err = nullptr;
+
+    if (sqlite3_open(db_file.c_str(), &this->db_instance) != SQLITE_OK)
+        throw std::runtime_error(sqlite3_errmsg(this->db_instance));
+}
+
 AbstractQueryBuilder* SQLite3QueryBuilder::getInstance()
 {
     // Checking if the db_instance pointer is null should have the effect of checking if the instance has been set
