@@ -1,10 +1,10 @@
-#include "model/SQLite3DB.h"
+#include "model/SQLite3QueryBuilder.h"
 #include "../catch.hpp"
 
 
 TEST_CASE("Connects to database")
 {
-    AbstractDB* builder = new SQLite3DB("test.db");
+    AbstractQueryBuilder* builder = new SQLite3QueryBuilder("test.db");
 
     std::vector<std::string> cols({"name"});
     std::vector<std::vector<std::string>> rows({

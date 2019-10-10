@@ -1,7 +1,7 @@
 #ifndef FINMAN_AUTH_H
 #define FINMAN_AUTH_H
 
-#include <model/SQLite3DB.h>
+#include <model/SQLite3QueryBuilder.h>
 
 /**
  * Auth should handle authentication across the site

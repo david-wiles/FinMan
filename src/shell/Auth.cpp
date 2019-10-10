@@ -61,7 +61,7 @@ bool Auth::query_for_user(std::string username, std::string password)
     std::string hash = hash_password(std::move(password));
 
     std::vector<std::string> params{std::move(username), hash};
-    QueryResult* res = SQLite3DB::getInstance()->query(sql, &params);
+    QueryResult* res = SQLite3QueryBuilder::getInstance()->query(sql, &params);
 
     std::vector<std::string> expected{"1", params.at(0)};
 
@@ -109,7 +109,7 @@ std::string Auth::new_user()
             std::string hash = hash_password(password);
 
             std::vector<std::string> params{username, hash};
-            SQLite3DB::getInstance()->query(sql, &params);
+            SQLite3QueryBuilder::getInstance()->query(sql, &params);
 
             if (query_for_user(username, password))
                 return username;

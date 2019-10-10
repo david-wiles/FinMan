@@ -1,6 +1,6 @@
 #include <iostream>
 #include <model/QueryResult.h>
-#include <model/SQLite3DB.h>
+#include <model/SQLite3QueryBuilder.h>
 #include <view/TableView.h>
 #include "controller/Controller.h"
 
@@ -43,12 +43,12 @@ int Controller::account(std::string username, const std::vector<std::string>* pa
         if (!acct.empty()) {
             std::string sql = "SELECT * FROM account WHERE owner = ?1 AND account_num = ?2;";
             auto* where = new std::vector<std::string>({username, acct});
-            res = SQLite3DB::getInstance()->query(sql, where);
+            res = SQLite3QueryBuilder::getInstance()->query(sql, where);
             delete(where);
         } else {
             std::string sql = "SELECT * FROM account WHERE owner = ?1;";
             auto* where = new std::vector<std::string>({username});
-            res = SQLite3DB::getInstance()->query(sql, where);
+            res = SQLite3QueryBuilder::getInstance()->query(sql, where);
             delete(where);
         }
 

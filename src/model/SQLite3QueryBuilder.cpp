@@ -3,12 +3,12 @@
 #include <iostream>
 #include <fstream>
 
-#include "model/SQLite3DB.h"
+#include "model/SQLite3QueryBuilder.h"
 
 
-AbstractDB* AbstractDB::_instance = nullptr;
+AbstractQueryBuilder* AbstractQueryBuilder::_instance = nullptr;
 
-SQLite3DB::SQLite3DB()
+SQLite3QueryBuilder::SQLite3QueryBuilder()
 {
     this->db_instance = nullptr;
     this->err = nullptr;
@@ -17,7 +17,7 @@ SQLite3DB::SQLite3DB()
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
-SQLite3DB::SQLite3DB(std::string db_file)
+SQLite3QueryBuilder::SQLite3QueryBuilder(std::string db_file)
 {
     this->db_instance = nullptr;
     this->err = nullptr;
@@ -26,13 +26,13 @@ SQLite3DB::SQLite3DB(std::string db_file)
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
-AbstractDB* SQLite3DB::getInstance()
+AbstractQueryBuilder* SQLite3QueryBuilder::getInstance()
 {
     // Checking if the db_instance pointer is null should have the effect of checking if the instance has been set
-    if (AbstractDB::_instance == nullptr) {
-        AbstractDB::_instance = new SQLite3DB();
+    if (AbstractQueryBuilder::_instance == nullptr) {
+        AbstractQueryBuilder::_instance = new SQLite3QueryBuilder();
     }
-    return AbstractDB::_instance;
+    return AbstractQueryBuilder::_instance;
 }
 
 // Callback for init db query, sets tables seen to true in tables map
@@ -49,7 +49,7 @@ int check_tables(void* table_names, int argc, char ** argv, char ** azColName) {
     return 0;
 }
 
-void SQLite3DB::init_db()
+void SQLite3QueryBuilder::init_db()
 {
     char sql[] = "SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'";
     this->err = nullptr;
@@ -85,7 +85,80 @@ void SQLite3DB::init_db()
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
-QueryResult* SQLite3DB::query(std::string sql, std::vector<std::string>* params)
+bool SQLite3QueryBuilder::createRow(std::string table, std::vector<std::pair<std::string, std::string>> *kv_insert)
+{
+    std::string insert_cols;
+    std::string inserts;
+    auto* vals = new std::vector<std::string>();
+
+    int insert_size = kv_insert->size();
+    for (int i = 0; i < insert_size - 2; ++i) {
+        std::pair<std::string,std::string> pair = kv_insert->at(i);
+        insert_cols += pair.first + ", ";
+        inserts += "?" + std::to_string(i + 1) + ", ";
+        vals->push_back(pair.second);
+    }
+    insert_cols += kv_insert->at(insert_size - 1).first;
+    inserts += "?" + std::to_string(insert_size);
+
+    std::string sql = "INSERT INTO " + table + " ( " + insert_cols + " ) VALUES ( " + inserts + " );";
+
+    try {
+        this->query(sql, vals);
+        return true;
+    } catch (std::runtime_error &err) {
+        std::cout << "Could not create records: " << err.what() << std::endl;
+        return false;
+    }
+}
+
+QueryResult *SQLite3QueryBuilder::findRow(std::string table, std::vector<std::string> *ret_cols,
+                                          std::vector<std::pair<std::string, std::string>> *kv_where)
+{
+    std::string select_cols;
+    std::string where;
+    auto* vals = new std::vector<std::string>();
+
+    if (ret_cols == nullptr) {
+        select_cols = " * ";
+    } else if (ret_cols->empty()) {
+        select_cols = " * ";
+    } else {
+        int ret_cols_size = ret_cols->size();
+        for (int i = 0; i < ret_cols_size - 2; ++i)
+            select_cols += ret_cols->at(i) + ", ";
+        select_cols += ret_cols->at(ret_cols_size - 1);
+    }
+
+    int where_size = kv_where->size();
+    for (int i = 0; i < where_size - 2; ++i) {
+        std::pair<std::string,std::string> pair(kv_where->at(i));
+        where += pair.first + " = " + "?" + std::to_string(i+1) + " AND ";
+        vals->push_back(pair.second);
+    }
+    where += kv_where->at(where_size - 1).first + " = " + "?" + std::to_string(where_size);
+
+    std::string sql = "SELECT " + select_cols + "FROM " + table + " WHERE " + where + ";";
+
+    QueryResult* result = this->query(sql, vals);
+
+    delete(vals);
+    return result;
+}
+
+bool SQLite3QueryBuilder::updateRow(std::string table, std::vector<std::pair<std::string, std::string>> *kv_update,
+                                    std::vector<std::pair<std::string, std::string>> *kv_where)
+{
+    return false;
+}
+
+bool SQLite3QueryBuilder::deleteRow(std::string table, std::vector<std::pair<std::string, std::string>> *kv_where)
+{
+    return false;
+}
+
+
+QueryResult* SQLite3QueryBuilder::query(std::string sql, std::vector<std::string>* params)
 {
     sqlite3_stmt* stmt = nullptr;
     this->err = nullptr;
@@ -126,7 +199,7 @@ QueryResult* SQLite3DB::query(std::string sql, std::vector<std::string>* params)
     return new QueryResult(col_names, results);
 }
 
-SQLite3DB::~SQLite3DB()
+SQLite3QueryBuilder::~SQLite3QueryBuilder()
 {
     sqlite3_close(this->db_instance);
 }
