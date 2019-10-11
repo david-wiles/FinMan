@@ -27,7 +27,7 @@ public:
 
     // CRUD
     bool createRow(std::string table, std::vector<std::pair<std::string, std::string>>* kv_insert) override;
-    QueryResult* findRow(std::string table, std::vector<std::string>* ret_cols,
+    QueryResult* findRows(std::string table, std::vector<std::string>* ret_cols,
                                  std::vector<std::pair<std::string, std::string>>* kv_where) override;
     bool updateRow(std::string table,
                            std::vector<std::pair<std::string, std::string>>* kv_update,

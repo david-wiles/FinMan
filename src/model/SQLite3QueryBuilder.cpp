@@ -87,56 +87,72 @@ void SQLite3QueryBuilder::init_db()
 
 bool SQLite3QueryBuilder::createRow(std::string table, std::vector<std::pair<std::string, std::string>> *kv_insert)
 {
+    // Short circuit if no data given
+    if (kv_insert->empty())
+        return false;
+
     std::string insert_cols;
     std::string inserts;
     auto* vals = new std::vector<std::string>();
 
-    int insert_size = kv_insert->size();
-    for (int i = 0; i < insert_size - 2; ++i) {
+    // Iterate through each pair of columns and values to build query strings and array of values
+    int size = kv_insert->size();
+    for (int i = 0; i < size - 1; ++i) {
         std::pair<std::string,std::string> pair = kv_insert->at(i);
         insert_cols += pair.first + ", ";
         inserts += "?" + std::to_string(i + 1) + ", ";
         vals->push_back(pair.second);
     }
-    insert_cols += kv_insert->at(insert_size - 1).first;
-    inserts += "?" + std::to_string(insert_size);
+    insert_cols += kv_insert->at(size - 1).first;
+    inserts += "?" + std::to_string(size);
+    vals->push_back(kv_insert->at(size - 1).second);
 
     std::string sql = "INSERT INTO " + table + " ( " + insert_cols + " ) VALUES ( " + inserts + " );";
 
+    // Return true if query doesn't throw errors
     try {
         this->query(sql, vals);
+
+        delete(vals);
         return true;
     } catch (std::runtime_error &err) {
+        // DEBUG
         std::cout << "Could not create records: " << err.what() << std::endl;
         return false;
     }
 }
 
-QueryResult *SQLite3QueryBuilder::findRow(std::string table, std::vector<std::string> *ret_cols,
+QueryResult *SQLite3QueryBuilder::findRows(std::string table, std::vector<std::string> *ret_cols,
                                           std::vector<std::pair<std::string, std::string>> *kv_where)
 {
+    // Short circuit if no data given
+    if (kv_where->empty())
+        return nullptr;
+
     std::string select_cols;
     std::string where;
     auto* vals = new std::vector<std::string>();
 
-    if (ret_cols == nullptr) {
-        select_cols = " * ";
-    } else if (ret_cols->empty()) {
+    // If no returning columns are specified, then all should be returned
+    if (ret_cols->empty()) {
         select_cols = " * ";
     } else {
+        // Build returning columns string
         int ret_cols_size = ret_cols->size();
-        for (int i = 0; i < ret_cols_size - 2; ++i)
+        for (int i = 0; i < ret_cols_size - 1; ++i)
             select_cols += ret_cols->at(i) + ", ";
         select_cols += ret_cols->at(ret_cols_size - 1);
     }
 
+    // Build where condition
     int where_size = kv_where->size();
-    for (int i = 0; i < where_size - 2; ++i) {
+    for (int i = 0; i < where_size - 1;) {
         std::pair<std::string,std::string> pair(kv_where->at(i));
-        where += pair.first + " = " + "?" + std::to_string(i+1) + " AND ";
+        where += pair.first + " = ?" + std::to_string(++i) + " AND ";
         vals->push_back(pair.second);
     }
-    where += kv_where->at(where_size - 1).first + " = " + "?" + std::to_string(where_size);
+    where += kv_where->at(where_size - 1).first + " = ?" + std::to_string(where_size);
+    vals->push_back(kv_where->at(where_size-1).second);
 
     std::string sql = "SELECT " + select_cols + "FROM " + table + " WHERE " + where + ";";
 
@@ -149,12 +165,82 @@ QueryResult *SQLite3QueryBuilder::findRow(std::string table, std::vector<std::st
 bool SQLite3QueryBuilder::updateRow(std::string table, std::vector<std::pair<std::string, std::string>> *kv_update,
                                     std::vector<std::pair<std::string, std::string>> *kv_where)
 {
-    return false;
+    // Short circuit if data not given
+    if (kv_update->empty() || kv_where->empty())
+        return false;
+
+    std::string set_kv;
+    std::string where_kv;
+    auto* vals = new std::vector<std::string>();
+
+    // Build set statement
+    int index = 1;
+    int set_size = kv_update->size();
+    for (int i = 0; i < set_size - 1; ++i) {
+        std::pair<std::string, std::string> pair = kv_update->at(i);
+        set_kv += pair.first + " = ?" + std::to_string(index++) + ", ";
+        vals->push_back(pair.second);
+    }
+    set_kv += kv_update->at(set_size - 1).first + " = ?" + std::to_string(index++);
+    vals->push_back(kv_update->at(set_size - 1).second);
+
+    // Build where condition
+    int where_size = kv_where->size();
+    for (int i = 0; i < where_size - 1; ++i) {
+        std::pair<std::string,std::string> pair = kv_where->at(i);
+        where_kv += pair.first + " = ?" + std::to_string(index++) + " AND ";
+        vals->push_back(pair.second);
+    }
+    where_kv += kv_where->at(where_size - 1).first + " = ?" + std::to_string(index);
+    vals->push_back(kv_where->at(where_size - 1).second);
+
+    std::string sql = "UPDATE " + table + " SET " + set_kv + " WHERE " + where_kv + ";";
+
+    // Return true if query executes successfully
+    try {
+        this->query(sql, vals);
+
+        delete(vals);
+        return true;
+    } catch (std::runtime_error &err) {
+        // DEBUG
+        std::cout << "Could not update records: " << err.what() << std::endl;
+        return false;
+    }
 }
 
 bool SQLite3QueryBuilder::deleteRow(std::string table, std::vector<std::pair<std::string, std::string>> *kv_where)
 {
-    return false;
+    // Short circuit if data not given
+    if (kv_where->empty())
+        return false;
+
+    std::string where;
+    auto* vals = new std::vector<std::string>();
+
+    // Build where condition
+    int size = kv_where->size();
+    for (int i = 0; i < size - 1;) {
+        std::pair<std::string,std::string> pair = kv_where->at(i);
+        where += pair.first + " = ?" + std::to_string(++i) + " AND ";
+        vals->push_back(pair.second);
+    }
+    where += kv_where->at(size-1).first + " = ?" + std::to_string(size);
+    vals->push_back(kv_where->at(size-1).second);
+
+    std::string sql = "DELETE FROM " + table + " WHERE " + where + ";";
+
+    // Return true if query executes without errors
+    try {
+        this->query(sql, vals);
+
+        delete(vals);
+        return true;
+    } catch (std::runtime_error &err) {
+        // DEBUG
+        std::cout << "Could not update records: " << err.what() << std::endl;
+        return false;
+    }
 }
 
 

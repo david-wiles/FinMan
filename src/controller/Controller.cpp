@@ -16,6 +16,16 @@ std::string get_param(const std::vector<std::string>* params, int index)
     return std::string();
 }
 
+void error_msg(std::string err)
+{
+    std::cout << err << std::endl;
+}
+
+int new_account(const std::string username)
+{
+    return 0;
+}
+
 int Controller::hello(std::string username, const std::vector<std::string>* unused_params)
 {
     std::cout << "Hello, " << username << "!" << std::endl;
@@ -41,23 +51,72 @@ int Controller::account(std::string username, const std::vector<std::string>* pa
         QueryResult* res;
 
         if (!acct.empty()) {
-            std::string sql = "SELECT * FROM account WHERE owner = ?1 AND account_num = ?2;";
-            auto* where = new std::vector<std::string>({username, acct});
-            res = SQLite3QueryBuilder::getInstance()->query(sql, where);
+
+            auto* cols = new std::vector<std::string>();
+            auto* where = new std::vector<std::pair<std::string,std::string>>({
+                std::make_pair("owner", username),
+                std::make_pair("acct_num", acct)
+            });
+            res = SQLite3QueryBuilder::getInstance()->findRows(std::string("account"), cols, where);
+            delete(cols);
             delete(where);
+
         } else {
-            std::string sql = "SELECT * FROM account WHERE owner = ?1;";
-            auto* where = new std::vector<std::string>({username});
-            res = SQLite3QueryBuilder::getInstance()->query(sql, where);
+
+            auto* cols = new std::vector<std::string>();
+            auto* where = new std::vector<std::pair<std::string,std::string>>({
+                std::make_pair("owner", username),
+            });
+            res = SQLite3QueryBuilder::getInstance()->findRows(std::string("account"), cols, where);
+            delete(cols);
             delete(where);
+
         }
 
         TableView results(res);
         results.print();
         return 0;
+
     } else if (action == "create") {
 
+        return new_account(username);
+
     } else if (action == "modify") {
+
+        std::string acct(get_param(params, 3));
+
+        if (!acct.empty()) {
+
+            std::string opt(get_param(params, 4));
+            std::string col(get_param(params, 5));
+
+            if (!opt.empty()) {
+
+                std::string val;
+                if (opt == "-u")
+                    val = get_param(params, 6));
+                else if (opt != "-r")
+                    ;
+                    // TODO return errors
+
+                // TODO determine cols to allow to update and create if/else statements
+                auto* set = new std::vector<std::pair<std::string,std::string>>({
+                    std::make_pair(col, val)
+                });
+                auto* where = new std::vector<std::pair<std::string,std::string>>({
+                    std::make_pair("owner", username),
+                    std::make_pair("acct_num", acct)
+                });
+                bool res = SQLite3QueryBuilder::getInstance()->updateRow("account", set, where);
+
+                if (res)
+                    return 0;
+                else
+                    ;
+                // TODO return errors
+            }
+
+        }
 
     }
 

@@ -35,11 +35,28 @@ public:
      * @param kv_where  Keys values in the form (column, value)
      * @return          QueryResult containing a table of results
      */
-    virtual QueryResult* findRow(std::string table, std::vector<std::string>* ret_cols,
+    virtual QueryResult* findRows(std::string table, std::vector<std::string>* ret_cols,
                                  std::vector<std::pair<std::string, std::string>>* kv_where) = 0;
+
+    /**
+     * Update a single record
+     *
+     * @param table     Table to update
+     * @param kv_update Values to update
+     * @param kv_where  Select query for update
+     * @return          Success of the action
+     */
     virtual bool updateRow(std::string table,
                            std::vector<std::pair<std::string, std::string>>* kv_update,
                            std::vector<std::pair<std::string, std::string>>* kv_where) = 0;
+
+    /**
+     * Delete a single record
+     *
+     * @param table     Table to delete from
+     * @param kv_where  Select query for delete
+     * @return          Success of action
+     */
     virtual bool deleteRow(std::string table, std::vector<std::pair<std::string, std::string>>* kv_where) = 0;
 
     virtual QueryResult* query(std::string sql, std::vector<std::string> *params) = 0;
