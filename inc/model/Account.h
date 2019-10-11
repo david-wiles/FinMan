@@ -5,6 +5,11 @@
 #include "AbstractModel.h"
 
 
+/**
+ * Model for Accounts.
+ *
+ * Allows all basic operations.
+ */
 class Account : public AbstractModel
 {
 public:

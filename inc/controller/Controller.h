@@ -5,6 +5,12 @@
 #include <string>
 #include <vector>
 
+
+/**
+ * Namespace containing functions which the user interacts with.  Each function should have two parameters: a string
+ * containing the username of the user logged in, and an array of arguments.  The arguments should be parsed to
+ * determine which action to perform on which models and which views to display
+ */
 namespace Controller
 {
     // Commands available to the user
@@ -20,7 +26,6 @@ namespace Controller
 
     extern std::vector<std::string> cmd_str_arr;
     extern int (*cmds[]) (const std::string&, const std::vector<std::string>*);
-
 }
 
 

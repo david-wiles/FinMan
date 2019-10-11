@@ -9,6 +9,18 @@
 #include "view/AbstractView.h"
 
 
+/**
+ * Abstract Model
+ *
+ * Provides an API for interacting with objects in the database.
+ *
+ * Create   a static create() method should be implemented in the subclass
+ * Read     Instantiation of the class queries the database for the object, and throws an error if the query is
+ *          ambiguous.  Calling get_view will create a detail view for the object
+ * Update   calling update will update the specified columns with the values provided. Each pair should consist of
+ *          a <column, value> pair to set.
+ * Delete   del() will delete the object from the database, or set the object to 'inactive' depending on the object
+ */
 class AbstractModel
 {
 public:

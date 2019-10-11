@@ -6,6 +6,11 @@
 
 #include "AbstractQueryBuilder.h"
 
+/**
+ * SQLite3 QueryBuilder
+ *
+ * Inherits all methods from Abstract QueryBuilder.  Calling build will create a basic statement of SQLite3 SQL
+ */
 class SQLite3QueryBuilder : public AbstractQueryBuilder
 {
 public:
@@ -16,6 +21,7 @@ public:
     ~SQLite3QueryBuilder() override { delete(_vals); };
 
 private:
+    // Build the where condition from WHERE OR and WHERE AND
     std::string build_where(int val_index);
 
 };

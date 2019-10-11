@@ -5,6 +5,12 @@
 #include <vector>
 #include <string>
 
+/**
+ * Class containing a table of data returned from a query.
+ *
+ * The _col_names vector contains column names returned and _rows contains a vector of rows returned. Each row is
+ * another vector, and columns are organized in the same order that they are specified in _col_names.
+ */
 class QueryResult
 {
 public:

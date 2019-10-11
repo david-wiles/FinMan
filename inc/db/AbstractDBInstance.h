@@ -6,7 +6,7 @@
 #include "QueryResult.h"
 
 /**
- * Database query builder class
+ * Database Instance
  *
  * Each subclass should at least implement init_db() and execute(). Init_db should check if the database has all
  * required tables, and create them if they don't exist.  Execute() should take a SQL string and a vector of string
@@ -27,6 +27,12 @@ public:
      */
     virtual QueryResult* query(std::string sql, std::vector<std::string> *params) = 0;
 
+    /**
+     * Execute a SQL statement from a SQL builder class
+     *
+     * @param builder   The builder containg the SQL statement and values to prepare it with
+     * @return          QueryResult of returned rows
+     */
     virtual QueryResult* query(AbstractQueryBuilder* builder) = 0;
 
     virtual ~AbstractDBInstance() { delete(_instance); };
@@ -34,6 +40,7 @@ public:
 protected:
     AbstractDBInstance() = default;
 
+    // Singleton instance
     static AbstractDBInstance* _instance;
 };
 
