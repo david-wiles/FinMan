@@ -1,6 +1,47 @@
 #include <stdexcept>
 #include "db/SQLite3QueryBuilder.h"
 
+std::string SQLite3QueryBuilder::build_where(int val_index)
+{
+
+    if (_opt_where.empty() && _where.empty())
+        throw std::runtime_error("Where condition empty");
+
+    std::string where_str;
+
+    // Build or conditions
+    if (!_opt_where.empty()) {
+
+        where_str += " ( ";
+
+        int opt_size = _opt_where.size();
+        for (int i = 0; i < opt_size - 1; ++i) {
+            std::pair<std::string, std::string> pair = _where.at(i);
+            where_str += pair.first + " = ?" + std::to_string(val_index++) + " OR ";
+            _vals->push_back(pair.second);
+        }
+        where_str += _where.at(opt_size - 1).first + " = ?" + std::to_string(val_index++) + " ) ";
+        _vals->push_back(_where.at(opt_size - 1).second);
+
+        if (!_where.empty())
+            where_str += " AND ";
+    }
+
+    // Build and conditions
+    if (!_where.empty()) {
+        int where_size = _where.size();
+        for (int i = 0; i < where_size - 1; ++i) {
+            std::pair<std::string, std::string> pair = _where.at(i);
+            where_str += pair.first + " = ?" + std::to_string(val_index++) + " AND ";
+            _vals->push_back(pair.second);
+        }
+        where_str += _where.at(where_size - 1).first + " = ?" + std::to_string(val_index);
+        _vals->push_back(_where.at(where_size - 1).second);
+    }
+
+    return where_str;
+}
+
 void SQLite3QueryBuilder::build()
 {
     // Clear any previous build
@@ -54,18 +95,7 @@ void SQLite3QueryBuilder::build()
             _sql += _cols.at(num_cols - 1);
         }
 
-        _sql += " FROM " + _table + " WHERE ";
-
-        int where_size = _where.size();
-        for (int i = 0; i < where_size - 1;) {
-            std::pair<std::string,std::string> pair(_where.at(i));
-            _sql += pair.first + " = ?" + std::to_string(++i) + " AND ";
-            _vals->push_back(pair.second);
-        }
-        _sql += _where.at(where_size-1).first + " = ?" + std::to_string(where_size);
-        _vals->push_back(_where.at(where_size-1).second);
-
-        _sql += ";";
+        _sql += " FROM " + _table + " WHERE " + build_where(1) + ";";
 
     // Build update
     } else if (_type == QueryType::UPDATE) {
@@ -83,33 +113,12 @@ void SQLite3QueryBuilder::build()
         _sql += _set.at(set_size - 1).first + " = ?" + std::to_string(index++);
         _vals->push_back(_set.at(set_size - 1).second);
 
-        _sql += " WHERE ";
-
-        int where_size = _where.size();
-        for (int i = 0; i < where_size - 1; ++i) {
-            std::pair<std::string, std::string> pair = _where.at(i);
-            _sql += pair.first + " = ?" + std::to_string(index++) + " AND ";
-            _vals->push_back(pair.second);
-        }
-        _sql += _where.at(where_size - 1).first + " = ?" + std::to_string(index);
-        _vals->push_back(_where.at(where_size - 1).second);
-        _sql += ";";
+        _sql += " WHERE " + build_where(index) + ";";
 
     // Build delete
     } else if (_type == QueryType::DELETE) {
 
-        _sql += "DELETE FROM " + _table + " WHERE ";
-
-        int where_size = _where.size();
-        for (int i = 0; i < where_size - 1;) {
-            std::pair<std::string,std::string> pair(_where.at(i));
-            _sql += pair.first + " = ?" + std::to_string(++i) + " AND ";
-            _vals->push_back(pair.second);
-        }
-        _sql += _where.at(where_size-1).first + " = ?" + std::to_string(where_size);
-        _vals->push_back(_where.at(where_size-1).second);
-
-        _sql += ";";
+        _sql += "DELETE FROM " + _table + " WHERE " + build_where(1);
 
     }
 

@@ -1,1 +1,6 @@
-#include "view/TableView.h"
+#include <view/TableView.h>
+
+void TableView::print()
+{
+
+}

@@ -1,19 +1,17 @@
-#ifndef TEST_TABLEVIEW_H
-#define TEST_TABLEVIEW_H
+#ifndef FINMAN_TABLEVIEW_H
+#define FINMAN_TABLEVIEW_H
 
 
-#include <db/QueryResult.h>
+#include "view/AbstractView.h"
 
-class TableView
+
+class TableView : public AbstractView
 {
 public:
-    TableView(QueryResult* res);
+    explicit TableView(QueryResult* table) : AbstractView(table) {};
 
-    void print();
-
-private:
-    QueryResult* _query_result;
+    void print() override;
 };
 
 
-#endif //TEST_TABLEVIEW_H
+#endif //FINMAN_TABLEVIEW_H

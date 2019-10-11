@@ -2,6 +2,7 @@
 #define FINMAN_DB_BASE_H
 
 
+#include "AbstractQueryBuilder.h"
 #include "QueryResult.h"
 
 /**
@@ -25,6 +26,8 @@ public:
      * @return          QueryResult object with returned rows
      */
     virtual QueryResult* query(std::string sql, std::vector<std::string> *params) = 0;
+
+    virtual QueryResult* query(AbstractQueryBuilder* builder) = 0;
 
     virtual ~AbstractDBInstance() { delete(_instance); };
 

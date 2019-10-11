@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <utility>
+#include <db/SQLite3QueryBuilder.h>
 
 #include "shell/Auth.h"
 
@@ -106,10 +107,13 @@ std::string Auth::new_user()
 
 
         if (password == password2) {
-            std::string hash = hash_password(password);
 
-            std::vector<std::string> params{username, hash};
-            SQLite3Instance::getInstance()->query(sql, &params);
+            auto* query = new SQLite3QueryBuilder("auth_user");
+            query->insert({"username", "pass_hash"})->values({{username, hash_password(password)}});
+
+            SQLite3Instance::getInstance()->query(query);
+
+            delete(query);
 
             if (query_for_user(username, password))
                 return username;

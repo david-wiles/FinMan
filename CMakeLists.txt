@@ -10,7 +10,7 @@ file(GLOB_RECURSE sources src/*.c src/*.cpp)
 add_executable(FinMan ${sources})
 
 file(GLOB_RECURSE test_sources test/*.cpp test/catch.hpp)
-add_executable(TEST ${sources} ${test_sources})
+#add_executable(TEST ${sources} ${test_sources})
 
 # Link libraries
 # find_package(SQLite3)

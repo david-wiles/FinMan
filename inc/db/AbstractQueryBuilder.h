@@ -18,21 +18,24 @@ public:
     std::string get_sql() { return this->_sql; };
     std::vector<std::string>* get_params() { return this->_vals; };
 
-    void select(std::vector<std::string> cols);
-    void insert(std::vector<std::string> cols);
-    void del() { this->_type = QueryType::DELETE; };
-    void update(std::vector<std::pair<std::string,std::string>> set);
-    void update(std::pair<std::string, std::string> cond);
+    AbstractQueryBuilder* select(std::vector<std::string> cols);
+    AbstractQueryBuilder* insert(std::vector<std::string> cols);
+    AbstractQueryBuilder* del() { this->_type = QueryType::DELETE; return this; };
+    AbstractQueryBuilder* update(std::vector<std::pair<std::string,std::string>> set);
+    AbstractQueryBuilder* update(std::pair<std::string, std::string> set);
 
-    void where(std::vector<std::pair<std::string,std::string>> where);
-    void where(std::pair<std::string, std::string> where);
-    void values(std::vector<std::vector<std::string>> vals);
+    AbstractQueryBuilder* where(std::vector<std::pair<std::string,std::string>> where);
+    AbstractQueryBuilder* where(std::pair<std::string, std::string> where);
+    AbstractQueryBuilder* opt_where(std::vector<std::pair<std::string,std::string>> where);
+    AbstractQueryBuilder* values(std::vector<std::vector<std::string>> vals);
 
-    ~AbstractQueryBuilder() { delete(_vals); };
+    virtual ~AbstractQueryBuilder() = 0;
 protected:
     std::string _table;
     QueryType _type;
+
     std::vector<std::pair<std::string,std::string>> _where;
+    std::vector<std::pair<std::string,std::string>> _opt_where;
     std::vector<std::vector<std::string>> _inserts;
     std::vector<std::pair<std::string,std::string>> _set;
     std::vector<std::string> _cols;

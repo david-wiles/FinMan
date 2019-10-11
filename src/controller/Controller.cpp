@@ -1,9 +1,10 @@
 #include <iostream>
 #include <db/QueryResult.h>
 #include <db/SQLite3Instance.h>
-#include <view/TableView.h>
+#include <db/SQLite3QueryBuilder.h>
 #include "controller/Controller.h"
-
+#include <view/TableView.h>
+#include <model/Account.h>
 
 std::string get_param(const std::vector<std::string>* params, int index)
 {
@@ -16,14 +17,14 @@ std::string get_param(const std::vector<std::string>* params, int index)
     return std::string();
 }
 
-int error_msg(std::string err)
+int error_msg(const std::string& err)
 {
     std::cout << err << std::endl;
     std::cout << "Type 'help' to see a list of valid commands and options." << std::endl;
     return 0;
 }
 
-int Controller::hello(std::string username, const std::vector<std::string>* unused_params)
+int Controller::hello(const std::string& username, const std::vector<std::string>* unused_params)
 {
     std::cout << "Hello, " << username << "!" << std::endl;
 
@@ -31,7 +32,7 @@ int Controller::hello(std::string username, const std::vector<std::string>* unus
     return 0;
 }
 
-int Controller::goodbye(std::string unused_user, const std::vector<std::string>* unused_params)
+int Controller::goodbye(const std::string& unused_user, const std::vector<std::string>* unused_params)
 {
     std::cout << "Goodbye" << std::endl;
 
@@ -39,12 +40,17 @@ int Controller::goodbye(std::string unused_user, const std::vector<std::string>*
     return 1;
 }
 
-int new_account(const std::string username)
+int Controller::help(const std::string& unused_user, const std::vector<std::string>* params)
 {
     return 0;
 }
 
-int Controller::account(std::string username, const std::vector<std::string>* params)
+int new_account(const std::string& username)
+{
+    return 0;
+}
+
+int Controller::account(const std::string& username, const std::vector<std::string>* params)
 {
     std::string action(get_param(params, 1));
     if (action == "view") {
@@ -54,17 +60,46 @@ int Controller::account(std::string username, const std::vector<std::string>* pa
 
         if (!acct.empty()) {
 
-            // Select account where owner or custodian is user and acct_num is acct
+            // Select account where owner or custodian is user and acct_num is acc
+            auto* query = new SQLite3QueryBuilder("account");
+            query
+            ->select({})
+            ->opt_where({
+                std::make_pair("owner", username),
+                std::make_pair("custodian", username)})
+            ->where(std::make_pair("acct_num", acct));
+
+            res = SQLite3Instance::getInstance()->query(query);
+
+            // Create view and print
+            TableView view(res);
+
+            view.print();
+
+            delete(query);
+            return 0;
 
         } else {
 
             // Select account where owner or custodian is user
+            auto* query = new SQLite3QueryBuilder("account");
+            query
+            ->select({})
+            ->opt_where({
+                    std::make_pair("owner", username),
+                    std::make_pair("custodian", username)});
+
+            res = SQLite3Instance::getInstance()->query(query);
+
+            // Create view and print
+            TableView view(res);
+
+            view.print();
+
+            delete(query);
+            return 0;
 
         }
-
-        TableView results(res);
-        results.print();
-        return 0;
 
     } else if (action == "create") {
 
@@ -91,15 +126,22 @@ int Controller::account(std::string username, const std::vector<std::string>* pa
                 }
 
                 // TODO determine cols
-                bool query_result = true;
 
                 // Update account where owner or custodian is user and acct_num is acct
+                auto* query = new SQLite3QueryBuilder("account");
+                query
+                ->opt_where({
+                    std::make_pair("owner", username),
+                    std::make_pair("custodian", username)
+                })
+                ->where(std::make_pair("acct_num", acct));
 
-                if (query_result)
+                try {
+                    Account account(query);
+                    account.update({std::make_pair(col, val)});
                     return 0;
-                else {
-                    error_msg("Could not update account.");
-                    return 0;
+                } catch (std::runtime_error &err) {
+                    return error_msg("Could not update account.");
                 }
 
             } else
@@ -112,15 +154,23 @@ int Controller::account(std::string username, const std::vector<std::string>* pa
         return error_msg("Could not perform the requested action with given arguments.");
 }
 
-int transaction(std::string username, const std::vector<std::string>* params)
+int Controller::transaction(const std::string& username, const std::vector<std::string>* params)
 {
-    std::string action = get_param(params, 1);
-    std::string acct = get_param(params, 2);
+    std::string acct = get_param(params, 1);
+    std::string action = get_param(params, 2);
 
     if (acct.empty())
         return error_msg("An account number must be provided to perform a transaction.");
 
-    if (action == "withdraw") {
+    if (action == "-f") {
+
+        std::string filename = get_param(params, 3);
+
+        // Insert from a list of transactions
+
+        return 0;
+
+    } else if (action == "withdraw") {
 
         std::string amt = get_param(params, 3);
         std::string description = get_param(params, 4);
@@ -129,6 +179,13 @@ int transaction(std::string username, const std::vector<std::string>* params)
             return error_msg("An amount must be provided to make a withdrawal.");
 
         // Insert a transaction with given arguments and deduct from account
+        auto* query = new SQLite3QueryBuilder("transaction");
+        query
+        ->insert({"amount", "description", "account", "type"})
+        ->values({{amt, description, acct, action}});
+
+        SQLite3Instance::getInstance()->query(query);
+
         return 0;
 
     } else if (action == "deposit") {
@@ -163,14 +220,17 @@ int transaction(std::string username, const std::vector<std::string>* params)
 
 }
 
-int assets(std::string username, const std::vector<std::string>* params);
-
-int new_income(const std::string username)
+int Controller::assets(const std::string& username, const std::vector<std::string>* params)
 {
     return 0;
 }
 
-int income(std::string username, const std::vector<std::string>* params)
+int new_income(const std::string& username)
+{
+    return 0;
+}
+
+int Controller::income(const std::string& username, const std::vector<std::string>* params)
 {
     std::string action = get_param(params, 1);
 
@@ -200,5 +260,12 @@ int income(std::string username, const std::vector<std::string>* params)
 
 }
 
-int investments(std::string username, const std::vector<std::string>* params);
-int budget(std::string username, const std::vector<std::string>* params);
+int Controller::investments(const std::string& username, const std::vector<std::string>* params)
+{
+    return 0;
+}
+
+int Controller::budget(const std::string& username, const std::vector<std::string>* params)
+{
+    return 0;
+}

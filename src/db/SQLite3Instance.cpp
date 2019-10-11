@@ -130,3 +130,16 @@ SQLite3Instance::~SQLite3Instance()
 {
     sqlite3_close(this->db_instance);
 }
+
+QueryResult *SQLite3Instance::query(AbstractQueryBuilder *builder)
+{
+    builder->build();
+
+    try {
+        return this->query(builder->get_sql(), builder->get_params());
+    } catch (std::runtime_error &err) {
+        // DEBUG
+        std::cerr << err.what() << std::endl;
+        return nullptr;
+    }
+}

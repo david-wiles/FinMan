@@ -6,6 +6,7 @@
 #include <vector>
 #include "AbstractDBInstance.h"
 #include "QueryResult.h"
+#include "AbstractQueryBuilder.h"
 #include <sqlite3.h>
 
 
@@ -35,6 +36,14 @@ public:
      * @return          A DB result object containing column names returned and rows returned
      */
     QueryResult* query(std::string sql, std::vector<std::string> *params) override;
+
+    /**
+     * Execute a query from a QueryBuilder object
+     *
+     * @param query QueryBuilder object reference
+     * @return      QueryResult returned from database
+     */
+    QueryResult* query(AbstractQueryBuilder* builder) override;
 
     ~SQLite3Instance() override;
 
