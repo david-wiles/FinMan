@@ -13,11 +13,11 @@ SQLite3Instance::SQLite3Instance()
     this->db_instance = nullptr;
     this->err = nullptr;
 
-    if (sqlite3_open("assets/data.db", &this->db_instance) != SQLITE_OK)
+    if (sqlite3_open("assets/data/data.db", &this->db_instance) != SQLITE_OK)
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
 }
 
-SQLite3Instance::SQLite3Instance(std::string db_file)
+SQLite3Instance::SQLite3Instance(const std::string& db_file)
 {
     this->db_instance = nullptr;
     this->err = nullptr;
@@ -56,13 +56,16 @@ void SQLite3Instance::init_db()
 
     auto* tables = new std::unordered_map<std::string, bool>({
         {"auth_user", false},
-        // Add the rest of the tables
+        {"account", false},
+        {"transaction", false},
+        {"income", false}
     });
 
     if (sqlite3_exec(this->db_instance, sql, check_tables, tables, &this->err) == SQLITE_OK) {
         bool initialized = true;
 
         // TODO how to check if only one (or more) tables need to be initialized, as opposed to recreating the db
+
         // Check if all tables were seen
         for (const auto& itr: *tables) {
             if (itr.second == false)

@@ -18,28 +18,8 @@ namespace Controller
     int investments(const std::string& username, const std::vector<std::string>* params);
     int budget(const std::string& username, const std::vector<std::string>* params);
 
-    std::string cmd_str_arr[] = {
-            "hello",
-            "goodbye",
-            "help",
-            "account",
-            "assets",
-            "income",
-            "investments",
-            "budget"
-    };
-
-    int (*cmds[]) (const std::string&, const std::vector<std::string>*) = {
-            &hello,
-            &goodbye,
-            &help,
-            &account,
-            &transaction,
-            &assets,
-            &income,
-            &investments,
-            &budget
-    };
+    extern std::vector<std::string> cmd_str_arr;
+    extern int (*cmds[]) (const std::string&, const std::vector<std::string>*);
 
 }
 

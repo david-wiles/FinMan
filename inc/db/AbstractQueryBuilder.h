@@ -29,7 +29,7 @@ public:
     AbstractQueryBuilder* opt_where(std::vector<std::pair<std::string,std::string>> where);
     AbstractQueryBuilder* values(std::vector<std::vector<std::string>> vals);
 
-    virtual ~AbstractQueryBuilder() = 0;
+    virtual ~AbstractQueryBuilder() = default;
 protected:
     std::string _table;
     QueryType _type;

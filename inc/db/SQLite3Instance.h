@@ -13,7 +13,7 @@
 class SQLite3Instance : public AbstractDBInstance
 {
 public:
-    explicit SQLite3Instance(std::string db_file);
+    explicit SQLite3Instance(const std::string& db_file);
 
     /**
      * Get a reference to the sqlite3 instance currently in use

@@ -2,11 +2,7 @@
 #define FINMAN_SHELL_H
 
 #include <string>
-#include <utility>
 #include <vector>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <iostream>
 
 
 class Shell
@@ -32,7 +28,7 @@ private:
     *
     * @return Array of arguments
     */
-    std::vector<std::string>* get_args();
+    std::vector<std::string> get_args();
 
     /**
      * Execute a command by checking the list of built in commands
@@ -41,7 +37,7 @@ private:
      * @param args      args[0] = the command. args[1:] = the parameters for the command
      * @return          Return status from the command
      */
-    static int execute(std::string username, const std::vector<std::string>* args);
+    static int execute(const std::string& username, const std::vector<std::string>& args);
 
 };
 

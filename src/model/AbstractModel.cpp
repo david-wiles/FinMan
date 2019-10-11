@@ -12,3 +12,11 @@ void AbstractModel::update(std::vector<std::pair<std::string, std::string>> set)
         throw std::runtime_error("Object not updated.");
     }
 }
+
+void AbstractModel::del()
+{
+    _builder->del();
+    if (SQLite3Instance::getInstance()->query(_builder) == nullptr) {
+        throw std::runtime_error("Object not deleted");
+    }
+}

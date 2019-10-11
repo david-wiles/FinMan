@@ -9,9 +9,9 @@
 #include "shell/Auth.h"
 
 
-Auth::Auth(std::string username, std::string password) : _username()
+Auth::Auth(const std::string& username, const std::string& password) : _username()
 {
-    if (query_for_user(username, std::move(password)))
+    if (query_for_user(username, password))
         this->_username = username;
     else
         throw std::runtime_error("Could not authenticate user.");
@@ -38,7 +38,7 @@ std::string Auth::authenticate()
  * @param password  Password to hash as a char array
  * @return          hashed password as a string
  */
-std::string hash_password(std::string password)
+std::string hash_password(const std::string& password)
 {
     // Create hex hash
     const char *pass_arr = password.c_str();
@@ -55,11 +55,11 @@ std::string hash_password(std::string password)
 }
 
 
-bool Auth::query_for_user(std::string username, std::string password)
+bool Auth::query_for_user(std::string username, const std::string& password)
 {
     std::string sql = "SELECT COUNT(*), username FROM auth_user WHERE username = ?1 AND pass_hash = ?2;";
 
-    std::string hash = hash_password(std::move(password));
+    std::string hash = hash_password(password);
 
     std::vector<std::string> params{std::move(username), hash};
     QueryResult* res = SQLite3Instance::getInstance()->query(sql, &params);
@@ -109,7 +109,9 @@ std::string Auth::new_user()
         if (password == password2) {
 
             auto* query = new SQLite3QueryBuilder("auth_user");
-            query->insert({"username", "pass_hash"})->values({{username, hash_password(password)}});
+            query
+            ->insert({"username", "pass_hash"})
+            ->values({{username, hash_password(password)}});
 
             SQLite3Instance::getInstance()->query(query);
 

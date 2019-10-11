@@ -65,18 +65,34 @@ void SQLite3QueryBuilder::build()
 
         // Add new rows
         int index = 1;
-        for (auto &itr: _inserts) {
-            std::string row("( ");
-            int len = itr.size();
-            for (int i = 0; i < len - 1; ++i) {
-                row += "?" + std::to_string(index++) + ", ";
-                _vals->push_back(itr.at(i));
-            }
-            row += "?" + std::to_string(index++) + " ), ";
-            _vals->push_back(itr.at(len-1));
+        int num_inserts = _inserts.size();
+        for (int i = 0; i < num_inserts - 1; ++i) {
+            std::string row_str("( ");
+            auto* row = &_inserts.at(i);
 
-            _sql += row;
+            int len = row->size();
+            for (int j = 0; j < len - 1; ++j) {
+                row_str += "?" + std::to_string(index++) + ", ";
+                _vals->push_back(row->at(j));
+            }
+            row_str += "?" + std::to_string(index++) + " ), ";
+            _vals->push_back(row->at(len-1));
+
+            _sql += row_str;
         }
+
+        std::string row_str("( ");
+        auto* row = &_inserts.at(num_inserts - 1);
+
+        int len = row->size();
+        for (int j = 0; j < len - 1; ++j) {
+            row_str += "?" + std::to_string(index++) + ", ";
+            _vals->push_back(row->at(j));
+        }
+        row_str += "?" + std::to_string(index) + " ) ";
+        _vals->push_back(row->at(len-1));
+
+        _sql += row_str;
 
         _sql += ";";
 

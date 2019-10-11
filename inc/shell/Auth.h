@@ -18,7 +18,7 @@ public:
      * @param username
      * @param password
      */
-    Auth(std::string username, std::string password);
+    Auth(const std::string& username, const std::string& password);
 
     /**
      * Prompt the user to either log in or create an account and save the resulting username
@@ -56,7 +56,7 @@ private:
      * @param pass_hash Password as a string, to be hashed in the function
      * @return          Boolean indicating if the user was found.
      */
-    static bool query_for_user(std::string username, std::string password);
+    static bool query_for_user(std::string username, const std::string& password);
 
 };
 

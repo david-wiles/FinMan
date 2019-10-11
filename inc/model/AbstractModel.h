@@ -14,7 +14,9 @@ class AbstractModel
 public:
     explicit AbstractModel(AbstractQueryBuilder* builder) : _obj(nullptr), _builder(nullptr) {};
 
+    // static create();
     void update(std::vector<std::pair<std::string,std::string>> set);
+    virtual void del();
     virtual AbstractView* get_view() = 0;
 
     ~AbstractModel()

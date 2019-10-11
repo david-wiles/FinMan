@@ -6,22 +6,45 @@
 #include <view/TableView.h>
 #include <model/Account.h>
 
-std::string get_param(const std::vector<std::string>* params, int index)
-{
-    try {
-        return params->at(index);
-    } catch (std::out_of_range &err) {
-        // TODO print error message
-    }
 
-    return std::string();
-}
+std::vector<std::string> Controller::cmd_str_arr = {
+        "hello",
+        "goodbye",
+        "help",
+        "account",
+        "assets",
+        "income",
+        "investments",
+        "budget"
+};
+
+int (*Controller::cmds[]) (const std::string&, const std::vector<std::string>*) = {
+        &hello,
+        &goodbye,
+        &help,
+        &account,
+        &transaction,
+        &assets,
+        &income,
+        &investments,
+        &budget
+};
+
 
 int error_msg(const std::string& err)
 {
     std::cout << err << std::endl;
     std::cout << "Type 'help' to see a list of valid commands and options." << std::endl;
     return 0;
+}
+
+std::string get_param(const std::vector<std::string>* params, int index)
+{
+    try {
+        return params->at(index);
+    } catch (std::out_of_range &err) {
+        return std::string();
+    }
 }
 
 int Controller::hello(const std::string& username, const std::vector<std::string>* unused_params)
@@ -35,8 +58,6 @@ int Controller::hello(const std::string& username, const std::vector<std::string
 int Controller::goodbye(const std::string& unused_user, const std::vector<std::string>* unused_params)
 {
     std::cout << "Goodbye" << std::endl;
-
-    delete(unused_params);
     return 1;
 }
 
