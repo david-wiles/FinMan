@@ -28,4 +28,4 @@ find_package(OpenSSL REQUIRED)
 set(LIBREADLINE /usr/lib/x86_64-linux-gnu/libreadline.so)
 
 target_link_libraries(FinMan sqlite3 Threads::Threads OpenSSL::Crypto ${SQLITE3_LIBRARIES} ${LIBREADLINE} ${CMAKE_DL_LIBS})
-target_link_libraries(TEST sqlite3 Threads::Threads OpenSSL::Crypto ${SQLITE3_LIBRARIES} ${LIBREADLINE} ${CMAKE_DL_LIBS})
+#target_link_libraries(TEST sqlite3 Threads::Threads OpenSSL::Crypto ${SQLITE3_LIBRARIES} ${LIBREADLINE} ${CMAKE_DL_LIBS})

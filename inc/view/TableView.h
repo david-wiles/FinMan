@@ -2,7 +2,7 @@
 #define TEST_TABLEVIEW_H
 
 
-#include <model/QueryResult.h>
+#include <db/QueryResult.h>
 
 class TableView
 {
