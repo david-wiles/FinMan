@@ -98,7 +98,8 @@ QueryResult* SQLite3Instance::query(std::string sql, std::vector<std::string>* p
     if (sqlite3_prepare_v2(this->db_instance, (const char*) sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         // Bind parameters to prepared statement
         for (const auto &itr: *params)
-            sqlite3_bind_text(stmt, param++, itr.c_str(), itr.size(), SQLITE_STATIC);
+            if (sqlite3_bind_text(stmt, param++, itr.c_str(), itr.size(), SQLITE_STATIC) != SQLITE_OK)
+                throw std::runtime_error("Could not bind parameter to SQL");
 
     } else
         throw std::runtime_error(sqlite3_errmsg(this->db_instance));
@@ -136,8 +137,10 @@ SQLite3Instance::~SQLite3Instance()
 
 QueryResult *SQLite3Instance::query(AbstractQueryBuilder *builder)
 {
+    // Create a SQL string and parameters array
     builder->build();
 
+    // Return QueryResult on success or null if and error occurs
     try {
         return this->query(builder->get_sql(), builder->get_params());
     } catch (std::runtime_error &err) {

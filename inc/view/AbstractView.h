@@ -8,6 +8,7 @@
 class AbstractView
 {
 public:
+    AbstractView() : _obj(nullptr) {};
     explicit AbstractView(QueryResult* obj) : _obj(obj){};
 
     virtual void print() = 0;

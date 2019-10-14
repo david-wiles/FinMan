@@ -5,6 +5,12 @@
 #include "controller/Controller.h"
 #include <view/TableView.h>
 #include <model/Account.h>
+#include <model/Transaction.h>
+#include <ctime>
+#include <view/AccountView.h>
+#include <util.h>
+#include <fstream>
+#include <sstream>
 
 
 std::vector<std::string> Controller::cmd_str_arr = {
@@ -15,7 +21,8 @@ std::vector<std::string> Controller::cmd_str_arr = {
         "assets",
         "income",
         "investments",
-        "budget"
+        "budget",
+        "overview"
 };
 
 int (*Controller::cmds[]) (const std::string&, const std::vector<std::string>*) = {
@@ -27,7 +34,8 @@ int (*Controller::cmds[]) (const std::string&, const std::vector<std::string>*) 
         &assets,
         &income,
         &investments,
-        &budget
+        &budget,
+        &overview
 };
 
 
@@ -46,6 +54,7 @@ std::string get_param(const std::vector<std::string>* params, int index)
         return std::string();
     }
 }
+
 
 int Controller::hello(const std::string& username, const std::vector<std::string>* unused_params)
 {
@@ -66,9 +75,38 @@ int Controller::help(const std::string& unused_user, const std::vector<std::stri
     return 0;
 }
 
+
 int new_account(const std::string& username)
 {
-    return 0;
+    std::string custodian;
+    std::string acct_num_str;
+    std::string balance;
+    std::string type;
+    std::string interest;
+    std::string name;
+
+    std::cout << "Enter a custodian for this account (press enter if none): " << std::endl;
+    std::cin >> custodian;
+
+    std::cout << "Enter this account's account number: " << std::endl;
+    std::cin >> acct_num_str;
+
+    std::cout << "Enter the balance currently in the account: " << std::endl;
+    std::cin >> balance;
+
+    std::cout << "Enter the type of account (checking, savings, retirement, etc.): " << std::endl;
+    std::cin >> type;
+
+    std::cout << "Enter the interest rate for the account (press enter if 0): " << std::endl;
+    std::cin >> interest;
+
+    std::cout << "Enter a name for the account(optional): " << std::endl;
+    std::cin >> name;
+
+    if (Account::create({acct_num_str, username, custodian, balance, type, interest, name}))
+        return 0;
+    else
+        return error_msg("Could not create account: ");
 }
 
 int Controller::account(const std::string& username, const std::vector<std::string>* params)
@@ -77,50 +115,41 @@ int Controller::account(const std::string& username, const std::vector<std::stri
     if (action == "view") {
 
         std::string acct(get_param(params, 2));
-        QueryResult* res;
+        auto* query = new SQLite3QueryBuilder("account");
+        auto* view = new AccountView();
 
         if (!acct.empty()) {
 
             // Select account where owner or custodian is user and acct_num is acc
-            auto* query = new SQLite3QueryBuilder("account");
             query
             ->select({})
             ->opt_where({
                 std::make_pair("owner", username),
-                std::make_pair("custodian", username)})
-            ->where(std::make_pair("acct_num", acct));
-
-            res = SQLite3Instance::getInstance()->query(query);
-
-            // Create view and print
-            TableView view(res);
-
-            view.print();
-
-            delete(query);
-            return 0;
+                std::make_pair("custodian", username)
+            })->where(std::make_pair("acct_num", acct));
 
         } else {
 
             // Select account where owner or custodian is user
-            auto* query = new SQLite3QueryBuilder("account");
             query
             ->select({})
             ->opt_where({
-                    std::make_pair("owner", username),
-                    std::make_pair("custodian", username)});
-
-            res = SQLite3Instance::getInstance()->query(query);
-
-            // Create view and print
-            TableView view(res);
-
-            view.print();
-
-            delete(query);
-            return 0;
+                std::make_pair("owner", username),
+                std::make_pair("custodian", username)
+            });
 
         }
+
+        /*
+        Account account(query);
+        view = account.get_view();
+        view->print();
+        */
+
+        delete(query);
+        delete(view);
+
+        return 0;
 
     } else if (action == "create") {
 
@@ -157,13 +186,10 @@ int Controller::account(const std::string& username, const std::vector<std::stri
                 })
                 ->where(std::make_pair("acct_num", acct));
 
-                try {
-                    Account account(query);
-                    account.update({std::make_pair(col, val)});
-                    return 0;
-                } catch (std::runtime_error &err) {
+                Account account(query);
+                if (!account.update({std::make_pair(col, val)}))
                     return error_msg("Could not update account.");
-                }
+                return 0;
 
             } else
                 return error_msg("An option must be used with modify: -u to update a column or -r to remove the data in the column.");
@@ -174,6 +200,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
     } else
         return error_msg("Could not perform the requested action with given arguments.");
 }
+
 
 int Controller::transaction(const std::string& username, const std::vector<std::string>* params)
 {
@@ -188,6 +215,31 @@ int Controller::transaction(const std::string& username, const std::vector<std::
         std::string filename = get_param(params, 3);
 
         // Insert from a list of transactions
+        std::ifstream transact_f(filename);
+        std::string line;
+        auto* transactions = new std::vector<std::vector<std::string>>();
+
+        while (std::getline(transact_f, line)) {
+            std::string token;
+            std::stringstream ss(line);
+            std::vector<std::string> tokens;
+
+            while (ss >> token)
+                tokens.push_back(token);
+
+            transactions->push_back(tokens);
+        }
+
+        auto* query = new SQLite3QueryBuilder("transaction");
+        query
+        ->insert({"type", "amount", "from_acct", "to_acct", "date"})
+        ->values(transactions);
+
+        if (SQLite3Instance::getInstance()->query(query) == nullptr)
+            return error_msg("Could not create transactions. Check the format of the file and try again.");
+
+        delete(transactions);
+        delete(query);
 
         return 0;
 
@@ -199,13 +251,8 @@ int Controller::transaction(const std::string& username, const std::vector<std::
         if (amt.empty())
             return error_msg("An amount must be provided to make a withdrawal.");
 
-        // Insert a transaction with given arguments and deduct from account
-        auto* query = new SQLite3QueryBuilder("transaction");
-        query
-        ->insert({"amount", "description", "account", "type"})
-        ->values({{amt, description, acct, action}});
-
-        SQLite3Instance::getInstance()->query(query);
+        if (!Transaction::create({"withdraw", amt, acct, "", util::now()}))
+            return error_msg("Could not make withdrawal.");
 
         return 0;
 
@@ -213,14 +260,14 @@ int Controller::transaction(const std::string& username, const std::vector<std::
 
         std::string amt = get_param(params, 3);
         std::string description = get_param(params, 4);
-        std::string date = get_param(params, 5);
 
         if (amt.empty())
             return error_msg("An amount must be provided to make a deposit.");
 
-        // Insert transaction and add amount to account
-        return 0;
+        if (!Transaction::create({"deposit", amt, "", acct, util::now()}))
+            return error_msg("Could not make deposit.");
 
+        return 0;
 
     } else if (action == "transfer") {
 
@@ -232,19 +279,22 @@ int Controller::transaction(const std::string& username, const std::vector<std::
         if (amt.empty())
             return error_msg("An amount must be specified.");
 
-        // Insert transaction and update amounts in accounts
+        if (!Transaction::create({"transfer", amt, acct, to_acct, util::now()}))
+            return error_msg("Could not complete transfer.");
+
         return 0;
 
-
     } else
-        return error_msg("Could not perform the requested action with given arguments.");
+        return error_msg("Could not perform the requested action.");
 
 }
+
 
 int Controller::assets(const std::string& username, const std::vector<std::string>* params)
 {
     return 0;
 }
+
 
 int new_income(const std::string& username)
 {
@@ -281,12 +331,19 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 
 }
 
+
 int Controller::investments(const std::string& username, const std::vector<std::string>* params)
 {
     return 0;
 }
 
+
 int Controller::budget(const std::string& username, const std::vector<std::string>* params)
+{
+    return 0;
+}
+
+int Controller::overview(const std::string &username, const std::vector<std::string> *params)
 {
     return 0;
 }

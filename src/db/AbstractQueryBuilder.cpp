@@ -55,3 +55,9 @@ AbstractQueryBuilder* AbstractQueryBuilder::values(std::vector<std::vector<std::
     return this;
 }
 
+AbstractQueryBuilder* AbstractQueryBuilder::values(std::vector<std::vector<std::string>>* vals)
+{
+    if (_type == QueryType::INSERT)
+        _inserts = *vals;
+    return this;
+}

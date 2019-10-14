@@ -1,21 +1,24 @@
 #include <db/SQLite3Instance.h>
 #include <stdexcept>
 #include <view/AccountView.h>
+#include <db/SQLite3QueryBuilder.h>
 #include "model/Account.h"
 
-Account::Account(AbstractQueryBuilder *builder) : AbstractModel(builder)
+
+bool Account::create(const std::vector<std::string>& vals)
 {
-    // Make sure that query returns all columns
-    builder->select({});
+    if (vals.size() != 7)
+        return false;
 
-    auto* res = SQLite3Instance::getInstance()->query(builder);
+    // Vals must be in a specific order
+    // TODO input validation
 
-    if (res->row_count() != 1) {
-        throw std::runtime_error("WHERE condition is ambiguous, should only return one row.");
-    } else {
-        _obj = res;
-        _builder = builder;
-    }
+    auto* query = new SQLite3QueryBuilder("account");
+    query
+    ->insert({"acct_num", "owner", "custodian", "balance", "type", "interest", "name"})
+    ->values({vals});
+
+    return SQLite3Instance::getInstance()->query(query) != nullptr;
 }
 
 AbstractView *Account::get_view()
@@ -23,3 +26,9 @@ AbstractView *Account::get_view()
     return new AccountView(this->_obj);
 }
 
+void Account::del()
+{
+    // Make account inactive to preserve relational integrity
+    this->_builder->update(std::make_pair("active", "false"));
+    SQLite3Instance::getInstance()->query(this->_builder);
+}

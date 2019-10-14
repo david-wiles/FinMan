@@ -24,12 +24,14 @@
 class AbstractModel
 {
 public:
-    explicit AbstractModel(AbstractQueryBuilder* builder) : _obj(nullptr), _builder(nullptr) {};
+    explicit AbstractModel(AbstractQueryBuilder* builder);
 
     // static create();
-    void update(std::vector<std::pair<std::string,std::string>> set);
+    virtual bool update(std::vector<std::pair<std::string,std::string>> set);
     virtual void del();
     virtual AbstractView* get_view() = 0;
+
+    virtual std::string get_attr(const std::string &attr_name);
 
     ~AbstractModel()
     {

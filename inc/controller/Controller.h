@@ -23,6 +23,7 @@ namespace Controller
     int income(const std::string& username, const std::vector<std::string>* params);
     int investments(const std::string& username, const std::vector<std::string>* params);
     int budget(const std::string& username, const std::vector<std::string>* params);
+    int overview(const std::string& username, const std::vector<std::string>* params);
 
     extern std::vector<std::string> cmd_str_arr;
     extern int (*cmds[]) (const std::string&, const std::vector<std::string>*);

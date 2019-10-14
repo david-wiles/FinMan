@@ -47,6 +47,7 @@ public:
 
     // Values to insert (new rows)
     AbstractQueryBuilder* values(std::vector<std::vector<std::string>> vals);
+    AbstractQueryBuilder* values(std::vector<std::vector<std::string>>* vals);
 
     virtual ~AbstractQueryBuilder() = default;
 

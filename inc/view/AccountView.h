@@ -7,6 +7,7 @@
 class AccountView : public AbstractView
 {
 public:
+    AccountView() : AbstractView() {};
     explicit AccountView(QueryResult* obj) : AbstractView(obj) {};
 
     void print() override;
