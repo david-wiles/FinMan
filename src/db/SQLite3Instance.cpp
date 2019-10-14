@@ -76,7 +76,7 @@ void SQLite3Instance::init_db()
 
         if (!initialized) {
             // Get SQL from file
-            std::ifstream init_file("assets/db.sql");
+            std::ifstream init_file("assets/data/db.sql");
             std::string init_sql((std::istreambuf_iterator<char>(init_file)), (std::istreambuf_iterator<char>()));
 
             // Execute initialization sql
