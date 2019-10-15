@@ -46,7 +46,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
 
                 // Update from account
                 if (!vals.at(2).empty()) {
-                    auto *from_query = new SQLite3QueryBuilder("account");
+                    auto from_query = new SQLite3QueryBuilder("account");
                     Account from(from_query->where(std::make_pair("acct_num", vals.at(2))));
                     int new_amt = stoi(from.get_attr("balance")) - stoi(vals.at(1));
                     from.update({std::make_pair("balance", std::to_string(new_amt))});
@@ -56,7 +56,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
 
                 // Update to account
                 if (!vals.at(3).empty()) {
-                    auto *to_query = new SQLite3QueryBuilder("account");
+                    auto to_query = new SQLite3QueryBuilder("account");
                     Account to(to_query->where(std::make_pair("acct_num", vals.at(3))));
                     int new_amt = stoi(to.get_attr("balance")) - stoi(vals.at(1));
                     to.update({std::make_pair("balance", std::to_string(new_amt))});
