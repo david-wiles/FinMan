@@ -11,6 +11,8 @@
 #include <util.h>
 #include <fstream>
 #include <sstream>
+#include <model/Asset.h>
+#include <model/Income.h>
 
 
 std::vector<std::string> Controller::cmd_str_arr = {
@@ -33,6 +35,7 @@ int (*Controller::cmds[]) (const std::string&, const std::vector<std::string>*) 
         &transaction,
         &assets,
         &income,
+        &debt,
         &investments,
         &budget,
         &overview
@@ -290,9 +293,54 @@ int Controller::transaction(const std::string& username, const std::vector<std::
 }
 
 
-int Controller::assets(const std::string& username, const std::vector<std::string>* params)
+int new_asset(const std::string& username)
 {
     return 0;
+}
+
+int Controller::assets(const std::string& username, const std::vector<std::string>* params)
+{
+    std::string action(get_param(params, 1));
+
+    if (action == "view") {
+
+        std::string id(get_param(params, 2));
+        auto* query = new SQLite3QueryBuilder("assets");
+
+        if (id.empty()) {
+            query
+            ->select({})
+            ->where(std::make_pair("owner", username));
+        } else {
+            query
+            ->select({})
+            ->where({std::make_pair("owner", username), std::make_pair("name", id)});
+        }
+
+        auto* res = SQLite3Instance::getInstance()->query(query);
+        TableView view(res);
+        view.print();
+
+        delete(query);
+        delete(res);
+        return 0;
+
+    } else if (action == "add") {
+
+        return new_asset(username);
+
+    } else if (action == "remove") {
+
+        std::string id(get_param(params, 2));
+        auto* query = new SQLite3QueryBuilder("asset");
+
+        Asset asset(query->where({std::make_pair("owner", username), std::make_pair("name", id)}));
+        asset.del();
+
+        delete(query);
+        return 0;
+    } else
+        return error_msg("Could not interpret commands.");
 }
 
 
@@ -308,8 +356,24 @@ int Controller::income(const std::string& username, const std::vector<std::strin
     if (action == "view") {
 
         std::string id = get_param(params, 2);
+        auto* query = new SQLite3QueryBuilder("income");
 
-        // View incomes associated with user
+        if (id.empty()) {
+            query
+            ->select({})
+            ->where(std::make_pair("owner", username));
+        } else {
+            query
+            ->select({})
+            ->where({std::make_pair("owner", username), std::make_pair("name", id)});
+        }
+
+        auto* res = SQLite3Instance::getInstance()->query(query);
+        TableView view(res);
+        view.print();
+
+        delete(query);
+        delete(res);
         return 0;
 
     } else if (action == "add") {
@@ -321,9 +385,16 @@ int Controller::income(const std::string& username, const std::vector<std::strin
         std::string id = get_param(params, 2);
 
         if (id.empty())
-            return error_msg("An income id must be provided in order to remove an income. Use the command 'income view' to view the information about all of your incomes.");
+            return error_msg("An income name must be provided in order to remove an income. Use the command 'income view' to view the information about all of your incomes.");
 
-        // Remove income
+        auto* query = new SQLite3QueryBuilder("income");
+
+        Income income(query);
+
+        if (income.get())
+            income.del();
+
+        delete(query);
         return 0;
 
     } else
@@ -332,11 +403,15 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 }
 
 
-int Controller::investments(const std::string& username, const std::vector<std::string>* params)
+int Controller::debt(const std::string& username, const std::vector<std::string>* params)
 {
     return 0;
 }
 
+int Controller::investments(const std::string& username, const std::vector<std::string>* params)
+{
+    return 0;
+}
 
 int Controller::budget(const std::string& username, const std::vector<std::string>* params)
 {

@@ -4,18 +4,19 @@
 #include <db/SQLite3Instance.h>
 #include <stdexcept>
 
-AbstractModel::AbstractModel(AbstractQueryBuilder *builder)
+
+bool AbstractModel::get()
 {
     // Make sure that query returns all columns
-    builder->select({});
+    _builder->select({});
 
-    auto* res = SQLite3Instance::getInstance()->query(builder);
+    auto* res = SQLite3Instance::getInstance()->query(_builder);
 
     if (res->row_count() != 1) {
-        throw std::runtime_error("WHERE condition is ambiguous, should only return one row.");
+        return false;
     } else {
         _obj = res;
-        _builder = builder;
+        return true;
     }
 }
 

@@ -39,6 +39,11 @@ private:
      */
     static int execute(const std::string& username, const std::vector<std::string>& args);
 
+    /**
+     * Update all of a user's account balances upon login
+     */
+    void update();
+
 };
 
 #endif //FINMAN_SHELL_H

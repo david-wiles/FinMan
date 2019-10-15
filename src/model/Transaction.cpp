@@ -8,6 +8,11 @@
 #include "view/TransactionView.h"
 
 
+Transaction::Transaction(AbstractQueryBuilder *builder, QueryResult *result) : AbstractModel(builder)
+{
+    this->_obj = result;
+}
+
 bool Transaction::create(const std::vector<std::string> &vals)
 {
     if (vals.size() != 5)
