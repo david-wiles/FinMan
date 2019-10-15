@@ -7,7 +7,7 @@
 class Asset : public AbstractModel
 {
 public:
-    explicit Asset(AbstractQueryBuilder* builder) : AbstractModel(builder) {};
+    explicit Asset(SQLite3QueryBuilder* builder) : AbstractModel(builder) {};
 
     static bool create(const std::vector<std::string>& vals);
     AbstractView* get_view() override;

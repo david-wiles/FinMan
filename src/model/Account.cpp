@@ -1,6 +1,5 @@
 #include <db/SQLite3Instance.h>
 #include <stdexcept>
-#include <view/AccountView.h>
 #include <db/SQLite3QueryBuilder.h>
 #include "model/Account.h"
 

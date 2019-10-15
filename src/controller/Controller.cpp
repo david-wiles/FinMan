@@ -7,7 +7,6 @@
 #include <model/Account.h>
 #include <model/Transaction.h>
 #include <ctime>
-#include <view/AccountView.h>
 #include <util.h>
 #include <fstream>
 #include <sstream>
@@ -62,8 +61,6 @@ std::string get_param(const std::vector<std::string>* params, int index)
 int Controller::hello(const std::string& username, const std::vector<std::string>* unused_params)
 {
     std::cout << "Hello, " << username << "!" << std::endl;
-
-    delete(unused_params);
     return 0;
 }
 
@@ -78,6 +75,8 @@ int Controller::help(const std::string& unused_user, const std::vector<std::stri
     return 0;
 }
 
+
+// Management functions
 
 int new_account(const std::string& username)
 {
@@ -115,11 +114,12 @@ int new_account(const std::string& username)
 int Controller::account(const std::string& username, const std::vector<std::string>* params)
 {
     std::string action(get_param(params, 1));
+
     if (action == "view") {
 
         std::string acct(get_param(params, 2));
+
         auto* query = new SQLite3QueryBuilder("account");
-        auto* view = new AccountView();
 
         if (!acct.empty()) {
 
@@ -143,14 +143,8 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
         }
 
-        /*
-        Account account(query);
-        view = account.get_view();
-        view->print();
-        */
-
-        delete(query);
-        delete(view);
+        auto* res = SQLite3Instance::getInstance()->query(query);
+        TableView::view(res);
 
         return 0;
 
@@ -167,6 +161,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
             std::string opt(get_param(params, 4));
             std::string col(get_param(params, 5));
+            auto* query = new SQLite3QueryBuilder("account");
 
             if (!opt.empty()) {
 
@@ -181,7 +176,6 @@ int Controller::account(const std::string& username, const std::vector<std::stri
                 // TODO determine cols
 
                 // Update account where owner or custodian is user and acct_num is acct
-                auto* query = new SQLite3QueryBuilder("account");
                 query
                 ->opt_where({
                     std::make_pair("owner", username),
@@ -240,9 +234,6 @@ int Controller::transaction(const std::string& username, const std::vector<std::
 
         if (SQLite3Instance::getInstance()->query(query) == nullptr)
             return error_msg("Could not create transactions. Check the format of the file and try again.");
-
-        delete(transactions);
-        delete(query);
 
         return 0;
 
@@ -318,11 +309,8 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
         }
 
         auto* res = SQLite3Instance::getInstance()->query(query);
-        TableView view(res);
-        view.print();
+        TableView::view(res);
 
-        delete(query);
-        delete(res);
         return 0;
 
     } else if (action == "add") {
@@ -333,11 +321,11 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
 
         std::string id(get_param(params, 2));
         auto* query = new SQLite3QueryBuilder("asset");
+        query->where({std::make_pair("owner", username), std::make_pair("name", id)});
 
-        Asset asset(query->where({std::make_pair("owner", username), std::make_pair("name", id)}));
+        Asset asset(query);
         asset.del();
 
-        delete(query);
         return 0;
     } else
         return error_msg("Could not interpret commands.");
@@ -369,11 +357,8 @@ int Controller::income(const std::string& username, const std::vector<std::strin
         }
 
         auto* res = SQLite3Instance::getInstance()->query(query);
-        TableView view(res);
-        view.print();
+        TableView::view(res);
 
-        delete(query);
-        delete(res);
         return 0;
 
     } else if (action == "add") {
@@ -388,13 +373,11 @@ int Controller::income(const std::string& username, const std::vector<std::strin
             return error_msg("An income name must be provided in order to remove an income. Use the command 'income view' to view the information about all of your incomes.");
 
         auto* query = new SQLite3QueryBuilder("income");
+        query->where({std::make_pair("owner", username), std::make_pair("alias", id)});
 
         Income income(query);
+        income.del();
 
-        if (income.get())
-            income.del();
-
-        delete(query);
         return 0;
 
     } else
