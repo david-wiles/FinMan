@@ -12,16 +12,14 @@ bool Transaction::create(const std::vector<std::string> &vals)
     if (vals.size() != 5)
         return false;
 
-    bool err = false;
-
     // TODO validation
 
-    auto* query = new SQLite3QueryBuilder("transaction");
+    auto query = new SQLite3QueryBuilder("transaction");
     query
     ->insert({"type", "amount", "from_acct", "to_acct", "date"})
     ->values({vals});
 
-    err = SQLite3Instance::getInstance()->query(query) == nullptr;
+    bool err = SQLite3Instance::getInstance()->query(query) == nullptr;
 
     delete(query);
 

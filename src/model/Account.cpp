@@ -7,15 +7,12 @@
 
 bool Account::create(const std::vector<std::string>& vals)
 {
-    if (vals.size() != 7)
+    if (vals.size() != 6)
         return false;
-
-    // Vals must be in a specific order
-    // TODO input validation
 
     auto* query = new SQLite3QueryBuilder("account");
     query
-    ->insert({"acct_num", "owner", "custodian", "balance", "type", "interest", "name"})
+    ->insert({"acct_num", "owner", "custodian", "balance", "type", "interest"})
     ->values({vals});
 
     return SQLite3Instance::getInstance()->query(query) != nullptr;

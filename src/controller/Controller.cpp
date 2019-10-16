@@ -88,27 +88,57 @@ int new_account(const std::string& username)
     std::string balance;
     std::string type;
     std::string interest;
-    std::string name;
+    bool valid = false;
 
     std::cout << "Enter a custodian for this account (press enter if none): " << std::endl;
     std::cin >> custodian;
 
-    std::cout << "Enter this account's account number: " << std::endl;
-    std::cin >> acct_num_str;
+    if (custodian.empty()) {
+        custodian = username;
+    }
 
-    std::cout << "Enter the balance currently in the account: " << std::endl;
-    std::cin >> balance;
+    while (!valid) {
+        std::cout << "Enter this account's account number: " << std::endl;
+        std::cin >> acct_num_str;
+
+        try {
+            std::stoi(acct_num_str);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Account number must only contain numbers." << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the balance currently in the account: " << std::endl;
+        std::cin >> balance;
+
+        try {
+            std::stod(balance);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Account balance must be a valid decimal value." << std::endl;
+        }
+    }
 
     std::cout << "Enter the type of account (checking, savings, retirement, etc.): " << std::endl;
     std::cin >> type;
 
-    std::cout << "Enter the interest rate for the account (press enter if 0): " << std::endl;
-    std::cin >> interest;
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the interest rate for the account: " << std::endl;
+        std::cin >> interest;
 
-    std::cout << "Enter a name for the account(optional): " << std::endl;
-    std::cin >> name;
+        try {
+            std::stod(interest);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Interest rate must be a valid decimal value." << std::endl;
+        }
+    }
 
-    if (Account::create({acct_num_str, username, custodian, balance, type, interest, name}))
+    if (Account::create({acct_num_str, username, custodian, balance, type, interest}))
         return 0;
     else
         return error_msg("Could not create account: ");
@@ -165,34 +195,34 @@ int Controller::account(const std::string& username, const std::vector<std::stri
             std::string opt(get_param(params, 4));
             std::string col(get_param(params, 5));
             auto* query = new SQLite3QueryBuilder("account");
+            // Update account where owner or custodian is user and acct_num is acct
+            query
+            ->opt_where({
+                std::make_pair("owner", username),
+                std::make_pair("custodian", username)
+            })
+            ->where(std::make_pair("acct_num", acct));
+            Account account(query);
 
             if (!opt.empty()) {
 
-                std::string val;
-                if (opt == "-u")
-                    val = get_param(params, 6);
-                else if (opt != "-r") {
-                    error_msg("Invalid option for account.");
+                std::string val = get_param(params, 6);
+                bool success;
+
+                if (opt == "--owner")
+                    success = account.update({std::make_pair("owner", val)});
+                else if (opt == "--custodian")
+                    success = account.update({std::make_pair("custodian", val)});
+                else
+                    return error_msg("Could not modify account with the given option.");
+
+                if (success)
                     return 0;
-                }
-
-                // TODO determine cols
-
-                // Update account where owner or custodian is user and acct_num is acct
-                query
-                ->opt_where({
-                    std::make_pair("owner", username),
-                    std::make_pair("custodian", username)
-                })
-                ->where(std::make_pair("acct_num", acct));
-
-                Account account(query);
-                if (!account.update({std::make_pair(col, val)}))
+                else
                     return error_msg("Could not update account.");
-                return 0;
 
             } else
-                return error_msg("An option must be used with modify: -u to update a column or -r to remove the data in the column.");
+                return error_msg("An attribute to modify must be specified: --owner to change owner, --custodian to change custodian.");
 
         } else
             return error_msg("An account number must be provided to update and account.");
