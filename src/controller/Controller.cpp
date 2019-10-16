@@ -12,6 +12,9 @@
 #include <sstream>
 #include <model/Asset.h>
 #include <model/Income.h>
+#include <model/Debt.h>
+#include <model/Investment.h>
+#include <model/Budget.h>
 
 
 std::vector<std::string> Controller::cmd_str_arr = {
@@ -327,6 +330,27 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
         asset.del();
 
         return 0;
+    } else if (action == "modify") {
+
+        std::string id(get_param(params, 2));
+        std::string opt(get_param(params, 3));
+        std::string val(get_param(params, 4));
+
+        auto query = new SQLite3QueryBuilder("asset");
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+        // TODO determine cols
+
+        Asset asset(query);
+
+        if (asset.get()) {
+            if (asset.update({std::make_pair("col", val)}))
+                return 0;
+            else
+                return error_msg("Could not update asset.");
+        } else {
+            return error_msg("Could not find asset.");
+        }
+
     } else
         return error_msg("Could not interpret commands.");
 }
@@ -380,25 +404,248 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 
         return 0;
 
+    } else if (action == "modify") {
+
+        std::string id(get_param(params, 2));
+        std::string opt(get_param(params, 3));
+        std::string val(get_param(params, 4));
+
+        // TODO validate col / opt
+
+        auto query = new SQLite3QueryBuilder("income");
+        query->where({std::make_pair("owner", username), std::make_pair("alias", id)});
+
+        Income income(query);
+
+        if (income.get()) {
+            if (income.update({std::make_pair("col", val)}))
+                return 0;
+            else
+                return error_msg("Could not update income.");
+        } else
+            return error_msg("Could not find specified income.");
+
     } else
         return error_msg("Could not perform the requested action with given arguments.");
 
 }
 
 
+int new_debt(const std::string& username)
+{
+    return 0;
+}
+
 int Controller::debt(const std::string& username, const std::vector<std::string>* params)
+{
+    std::string action(get_param(params, 1));
+
+    if (action == "view") {
+
+        std::string id(get_param(params, 2));
+        auto query = new SQLite3QueryBuilder("debt");
+
+        if (id.empty()) {
+            query->select({})->where(std::make_pair("owner", username));
+        } else {
+            query->select({})->where({std::make_pair("owner", username), std::make_pair("id", id)});
+        }
+
+        TableView::view(SQLite3Instance::getInstance()->query(query));
+        return 0;
+    } else if (action == "add") {
+
+        return new_debt(username);
+
+    } else if (action == "remove") {
+
+        std::string id(get_param(params, 2));
+        auto query = new SQLite3QueryBuilder("debt");
+
+        if (id.empty())
+            return error_msg("A specific debt must be specified.");
+
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+
+        Debt debt(query);
+
+        if (debt.get()) {
+            debt.del();
+            return 0;
+        } else
+            return error_msg("The debt could not be found.");
+
+    } else if (action == "modify") {
+
+        std::string id(get_param(params, 2));
+        std::string opt(get_param(params, 3));
+        std::string val(get_param(params, 4));
+
+        // TODO validation
+
+        auto query = new SQLite3QueryBuilder("debt");
+
+        if (id.empty())
+            return error_msg("A specific debt must be specified.");
+
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+
+        Debt debt(query);
+
+        if (debt.get()) {
+            if (debt.update({std::make_pair("col", val)}))
+                return 0;
+            else
+                return error_msg("Could not update the debt.");
+        } else
+            return error_msg("Could not find the debt.");
+    } else
+        return error_msg("Invalid command.");
+}
+
+int new_investment(const std::string& username)
 {
     return 0;
 }
 
 int Controller::investments(const std::string& username, const std::vector<std::string>* params)
 {
+    std::string action(get_param(params, 1));
+
+    if (action == "view") {
+
+        std::string id(get_param(params, 2));
+        auto query = new SQLite3QueryBuilder("investment");
+
+        if (id.empty()) {
+            query->select({})->where(std::make_pair("owner", username));
+        } else {
+            query->select({})->where({std::make_pair("owner", username), std::make_pair("id", id)});
+        }
+
+        TableView::view(SQLite3Instance::getInstance()->query(query));
+        return 0;
+    } else if (action == "add") {
+
+        return new_investment(username);
+
+    } else if (action == "remove") {
+
+        std::string id(get_param(params, 2));
+        auto query = new SQLite3QueryBuilder("investment");
+
+        if (id.empty())
+            return error_msg("A specific investment must be specified.");
+
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+
+        Investment investment(query);
+
+        if (investment.get()) {
+            investment.del();
+            return 0;
+        } else
+            return error_msg("The investment could not be found.");
+
+    } else if (action == "modify") {
+
+        std::string id(get_param(params, 2));
+        std::string opt(get_param(params, 3));
+        std::string val(get_param(params, 4));
+
+        // TODO validation
+
+        auto query = new SQLite3QueryBuilder("investment");
+
+        if (id.empty())
+            return error_msg("A specific investment must be specified.");
+
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+
+        Investment investment(query);
+
+        if (investment.get()) {
+            if (investment.update({std::make_pair("col", val)}))
+                return 0;
+            else
+                return error_msg("Could not update the investment.");
+        } else
+            return error_msg("Could not find the investment.");
+    } else
+        return error_msg("Invalid command.");
+}
+
+
+int new_budget(const std::string& username)
+{
     return 0;
 }
 
 int Controller::budget(const std::string& username, const std::vector<std::string>* params)
 {
-    return 0;
+    std::string action(get_param(params, 1));
+
+    if (action == "view") {
+
+        std::string id(get_param(params, 2));
+        auto query = new SQLite3QueryBuilder("budget");
+
+        if (id.empty()) {
+            query->select({})->where(std::make_pair("owner", username));
+        } else {
+            query->select({})->where({std::make_pair("owner", username), std::make_pair("id", id)});
+        }
+
+        TableView::view(SQLite3Instance::getInstance()->query(query));
+        return 0;
+    } else if (action == "add") {
+
+        return new_budget(username);
+
+    } else if (action == "remove") {
+
+        std::string id(get_param(params, 2));
+        auto query = new SQLite3QueryBuilder("budget");
+
+        if (id.empty())
+            return error_msg("A specific budget must be specified.");
+
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+
+        Budget budget(query);
+
+        if (budget.get()) {
+            budget.del();
+            return 0;
+        } else
+            return error_msg("The budget could not be found.");
+
+    } else if (action == "modify") {
+
+        std::string id(get_param(params, 2));
+        std::string opt(get_param(params, 3));
+        std::string val(get_param(params, 4));
+
+        // TODO validation
+
+        auto query = new SQLite3QueryBuilder("budget");
+
+        if (id.empty())
+            return error_msg("A specific budget must be specified.");
+
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+
+        Budget budget(query);
+
+        if (budget.get()) {
+            if (budget.update({std::make_pair("col", val)}))
+                return 0;
+            else
+                return error_msg("Could not update the budget.");
+        } else
+            return error_msg("Could not find the budget.");
+    } else
+        return error_msg("Invalid command.");
 }
 
 int Controller::overview(const std::string &username, const std::vector<std::string> *params)

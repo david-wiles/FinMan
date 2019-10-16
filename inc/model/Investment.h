@@ -6,6 +6,7 @@
 
 class Investment : public AbstractModel
 {
+public:
     explicit Investment(AbstractQueryBuilder *builder) : AbstractModel(builder) {};
 
     static bool create(const std::vector<std::string>& vals);

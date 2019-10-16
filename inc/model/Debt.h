@@ -6,6 +6,7 @@
 
 class Debt : public AbstractModel
 {
+public:
     explicit Debt(AbstractQueryBuilder *builder) : AbstractModel(builder) {};
 
     static bool create(const std::vector<std::string>& vals);

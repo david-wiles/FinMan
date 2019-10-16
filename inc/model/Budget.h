@@ -6,6 +6,7 @@
 
 class Budget : public AbstractModel
 {
+public:
     explicit Budget(AbstractQueryBuilder *builder) : AbstractModel(builder) {};
 
     static bool create(const std::vector<std::string>& vals);
