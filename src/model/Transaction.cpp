@@ -5,13 +5,7 @@
 #include <ctime>
 #include <iomanip>
 #include "model/Transaction.h"
-#include "view/TransactionView.h"
 
-
-Transaction::Transaction(AbstractQueryBuilder *builder, QueryResult *result) : AbstractModel(builder)
-{
-    this->_obj = result;
-}
 
 bool Transaction::create(const std::vector<std::string> &vals)
 {
@@ -48,20 +42,18 @@ bool Transaction::create(const std::vector<std::string> &vals)
                 if (!vals.at(2).empty()) {
                     auto from_query = new SQLite3QueryBuilder("account");
                     Account from(from_query->where(std::make_pair("acct_num", vals.at(2))));
-                    int new_amt = stoi(from.get_attr("balance")) - stoi(vals.at(1));
+                    auto obj = from.get();
+                    int new_amt = stoi(obj->get_row(0)->at(1)) - stoi(vals.at(1));
                     from.update({std::make_pair("balance", std::to_string(new_amt))});
-
-                    delete (from_query);
                 }
 
                 // Update to account
                 if (!vals.at(3).empty()) {
                     auto to_query = new SQLite3QueryBuilder("account");
                     Account to(to_query->where(std::make_pair("acct_num", vals.at(3))));
-                    int new_amt = stoi(to.get_attr("balance")) - stoi(vals.at(1));
+                    auto obj = to.get();
+                    int new_amt = stoi(obj->get_row(0)->at(1)) - stoi(vals.at(1));
                     to.update({std::make_pair("balance", std::to_string(new_amt))});
-
-                    delete (to_query);
                 }
 
             } catch (std::runtime_error &e) {
@@ -74,11 +66,6 @@ bool Transaction::create(const std::vector<std::string> &vals)
 
     return true;
 
-}
-
-AbstractView *Transaction::get_view()
-{
-    return new TransactionView(this->_obj);
 }
 
 void Transaction::del()

@@ -10,8 +10,6 @@ public:
     explicit Debt(AbstractQueryBuilder *builder) : AbstractModel(builder) {};
 
     static bool create(const std::vector<std::string>& vals);
-    AbstractView* get_view() override;
-    void del() override;
 
     ~Debt() = default;
 };

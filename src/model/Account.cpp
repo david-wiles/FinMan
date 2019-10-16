@@ -1,6 +1,7 @@
 #include <db/SQLite3Instance.h>
 #include <stdexcept>
 #include <db/SQLite3QueryBuilder.h>
+#include <view/TableView.h>
 #include "model/Account.h"
 
 
@@ -18,11 +19,6 @@ bool Account::create(const std::vector<std::string>& vals)
     ->values({vals});
 
     return SQLite3Instance::getInstance()->query(query) != nullptr;
-}
-
-AbstractView *Account::get_view()
-{
-    return new AccountView(this->_obj);
 }
 
 void Account::del()

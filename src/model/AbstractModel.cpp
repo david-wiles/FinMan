@@ -3,9 +3,10 @@
 #include <utility>
 #include <db/SQLite3Instance.h>
 #include <stdexcept>
+#include <view/TableView.h>
 
 
-bool AbstractModel::get()
+QueryResult* AbstractModel::get()
 {
     // Make sure that query returns all columns
     _builder->select({});
@@ -13,10 +14,9 @@ bool AbstractModel::get()
     auto* res = SQLite3Instance::getInstance()->query(_builder);
 
     if (res->row_count() != 1) {
-        return false;
+        return nullptr;
     } else {
-        _obj = res;
-        return true;
+        return res;
     }
 }
 
@@ -35,15 +35,12 @@ void AbstractModel::del()
     }
 }
 
-std::string AbstractModel::get_attr(const std::string &attr_name)
+AbstractView *AbstractModel::get_view()
 {
-    // There's definitely a better way to do this
-    int index = 0;
-    for (auto& itr: *_obj->get_column_names()) {
-        if (itr == attr_name)
-            return _obj->get_row(1)->at(index);
-        ++index;
-    }
+    auto obj = this->get();
 
-    return std::string();
+    if (obj != nullptr)
+        return new TableView(obj);
+    else
+        return nullptr;
 }

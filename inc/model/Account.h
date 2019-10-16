@@ -16,7 +16,6 @@ public:
     explicit Account(AbstractQueryBuilder *builder) : AbstractModel(builder) {};
 
     static bool create(const std::vector<std::string>& vals);
-    AbstractView* get_view() override;
     void del() override;
 
     ~Account() = default;
