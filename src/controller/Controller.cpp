@@ -157,7 +157,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
         std::string acct(get_param(params, 2));
 
-        auto* query = new SQLite3QueryBuilder("account");
+        auto query = new SQLite3QueryBuilder("account");
 
         if (!acct.empty()) {
 
@@ -181,7 +181,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
         }
 
-        auto* res = SQLite3Instance::getInstance()->query(query);
+        auto res = SQLite3Instance::getInstance()->query(query);
         TableView::view(res);
 
         return 0;
@@ -199,7 +199,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
             std::string opt(get_param(params, 4));
             std::string col(get_param(params, 5));
-            auto* query = new SQLite3QueryBuilder("account");
+            auto query = new SQLite3QueryBuilder("account");
             // Update account where owner or custodian is user and acct_num is acct
             query
             ->opt_where({
@@ -252,7 +252,7 @@ int Controller::transaction(const std::string& username, const std::vector<std::
         // Insert from a list of transactions
         std::ifstream transact_f(filename);
         std::string line;
-        auto* transactions = new std::vector<std::vector<std::string>>();
+        auto transactions = new std::vector<std::vector<std::string>>();
 
         while (std::getline(transact_f, line)) {
             std::string token;
@@ -265,7 +265,7 @@ int Controller::transaction(const std::string& username, const std::vector<std::
             transactions->push_back(tokens);
         }
 
-        auto* query = new SQLite3QueryBuilder("transaction");
+        auto query = new SQLite3QueryBuilder("transaction");
         query
         ->insert({"type", "amount", "from_acct", "to_acct", "date"})
         ->values(transactions);
@@ -360,7 +360,7 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
     if (action == "view") {
 
         std::string name(get_param(params, 2));
-        auto* query = new SQLite3QueryBuilder("assets");
+        auto query = new SQLite3QueryBuilder("assets");
 
         if (name.empty()) {
             query
@@ -372,7 +372,7 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
             ->where({std::make_pair("owner", username), std::make_pair("name", name)});
         }
 
-        auto* res = SQLite3Instance::getInstance()->query(query);
+        auto res = SQLite3Instance::getInstance()->query(query);
         TableView::view(res);
 
         return 0;
@@ -384,7 +384,7 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
     } else if (action == "remove") {
 
         std::string name(get_param(params, 2));
-        auto* query = new SQLite3QueryBuilder("asset");
+        auto query = new SQLite3QueryBuilder("asset");
         query->where({std::make_pair("owner", username), std::make_pair("name", name)});
 
         Asset asset(query);
@@ -521,7 +521,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
     if (action == "view") {
 
         std::string id = get_param(params, 2);
-        auto* query = new SQLite3QueryBuilder("income");
+        auto query = new SQLite3QueryBuilder("income");
 
         if (id.empty()) {
             query
@@ -533,7 +533,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
             ->where({std::make_pair("owner", username), std::make_pair("name", id)});
         }
 
-        auto* res = SQLite3Instance::getInstance()->query(query);
+        auto res = SQLite3Instance::getInstance()->query(query);
         TableView::view(res);
 
         return 0;
@@ -549,7 +549,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
         if (id.empty())
             return error_msg("An income name must be provided in order to remove an income. Use the command 'income view' to view the information about all of your incomes.");
 
-        auto* query = new SQLite3QueryBuilder("income");
+        auto query = new SQLite3QueryBuilder("income");
         query->where({std::make_pair("owner", username), std::make_pair("alias", id)});
 
         Income income(query);

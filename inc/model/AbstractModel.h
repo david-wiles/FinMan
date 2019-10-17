@@ -32,10 +32,7 @@ public:
     virtual void del();
     virtual AbstractView* get_view();
 
-    ~AbstractModel()
-    {
-        delete(_builder);
-    }
+    ~AbstractModel() = default;
 
 protected:
     AbstractQueryBuilder* _builder;

@@ -10,7 +10,7 @@ bool Account::create(const std::vector<std::string>& vals)
     if (vals.size() != 6)
         return false;
 
-    auto* query = new SQLite3QueryBuilder("account");
+    auto query = new SQLite3QueryBuilder("account");
     query
     ->insert({"acct_num", "owner", "custodian", "balance", "type", "interest"})
     ->values({vals});

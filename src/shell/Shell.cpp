@@ -42,6 +42,9 @@ std::vector<std::string> Shell::get_args()
 
     std::string input_str(input);
     std::stringstream ss(input_str);
+    {
+        delete(_builder);
+    }
 
     // Split line into words
     std::string token;
@@ -69,16 +72,15 @@ int Shell::execute(const std::string& username, const std::vector<std::string>& 
 void Shell::update()
 {
     // Get user's accounts
-    auto* query = new SQLite3QueryBuilder("account");
+    auto query = new SQLite3QueryBuilder("account");
     query
     ->select({"acct_num", "balance"})
     ->opt_where({std::make_pair("owner", this->_username), std::make_pair("custodian", this->_username)});
 
-    auto* res = SQLite3Instance::getInstance()->query(query);
+    auto res = SQLite3Instance::getInstance()->query(query);
 
     // Iterate through accounts
     for (auto &acct : *res->get_rows()) {
-        delete(query);
 
         query = new SQLite3QueryBuilder("transaction");
         query
@@ -87,7 +89,7 @@ void Shell::update()
         ->where(std::make_pair("completed", "f"));
 
         // Iterate through transactions associated with account which aren't completed
-        auto* transactions = SQLite3Instance::getInstance()->query(query);
+        auto transactions = SQLite3Instance::getInstance()->query(query);
         SQLite3QueryBuilder* transaction_query;
         for (auto &t : *transactions->get_rows()) {
 
@@ -113,7 +115,7 @@ void Shell::update()
                 else
                     new_amt = stoi(acct.at(1)) - stoi(t.at(1));
 
-                auto* acct_query = new SQLite3QueryBuilder("account");
+                auto acct_query = new SQLite3QueryBuilder("account");
                 acct_query
                 ->update(std::make_pair("balance", std::to_string(new_amt)))
                 ->where(std::make_pair("acct_num", acct.at(0)));
@@ -121,17 +123,12 @@ void Shell::update()
                 if (SQLite3Instance::getInstance()->query(transaction_query) != nullptr)
                     SQLite3Instance::getInstance()->query(acct_query);
 
-                delete(transaction_query);
-                delete(acct_query);
 
             }
 
         }
 
-        delete(transactions);
     }
 
-    delete(query);
-    delete(res);
 
 }

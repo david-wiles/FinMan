@@ -37,7 +37,7 @@ AbstractDBInstance* SQLite3Instance::getInstance()
 
 // Callback for init db query, sets tables seen to true in tables map
 int check_tables(void* table_names, int argc, char ** argv, char ** azColName) {
-    auto* tables = static_cast<std::unordered_map<std::string, bool> *>(table_names);
+    auto tables = static_cast<std::unordered_map<std::string, bool> *>(table_names);
     if (argv[0] != nullptr) {
         try {
             tables->at(std::string(argv[0])) = true;
@@ -54,7 +54,7 @@ void SQLite3Instance::init_db()
     char sql[] = "SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'";
     this->err = nullptr;
 
-    auto* tables = new std::unordered_map<std::string, bool>({
+    auto tables = new std::unordered_map<std::string, bool>({
         {"auth_user", false},
         {"account", false},
         {"transaction", false},
@@ -108,14 +108,14 @@ QueryResult* SQLite3Instance::query(std::string sql, std::vector<std::string>* p
 
     // Get column names
     int num_cols = sqlite3_column_count(stmt);
-    auto* col_names = new std::vector<std::string>(num_cols);
+    auto col_names = new std::vector<std::string>(num_cols);
     for (int i = 0; i < num_cols; ++i)
         col_names->at(i) = std::string((char *) sqlite3_column_name(stmt, i));
 
     // Add each row returned into results vector
-    auto* results = new std::vector<std::vector<std::string>>;
+    auto results = new std::vector<std::vector<std::string>>;
     while (step != SQLITE_DONE) {
-        auto* row = new std::vector<std::string>(num_cols);
+        auto row = new std::vector<std::string>(num_cols);
         for (int i = 0; i < num_cols; ++i) {
             char* col_text = (char *) sqlite3_column_text(stmt, i);
             if (col_text != nullptr)

@@ -68,7 +68,7 @@ void SQLite3QueryBuilder::build()
         int num_inserts = _inserts.size();
         for (int i = 0; i < num_inserts - 1; ++i) {
             std::string row_str("( ");
-            auto* row = &_inserts.at(i);
+            auto row = &_inserts.at(i);
 
             int len = row->size();
             for (int j = 0; j < len - 1; ++j) {
@@ -82,7 +82,7 @@ void SQLite3QueryBuilder::build()
         }
 
         std::string row_str("( ");
-        auto* row = &_inserts.at(num_inserts - 1);
+        auto row = &_inserts.at(num_inserts - 1);
 
         int len = row->size();
         for (int j = 0; j < len - 1; ++j) {

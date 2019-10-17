@@ -11,7 +11,7 @@ QueryResult* AbstractModel::get()
     // Make sure that query returns all columns
     _builder->select({});
 
-    auto* res = SQLite3Instance::getInstance()->query(_builder);
+    auto res = SQLite3Instance::getInstance()->query(_builder);
 
     if (res->row_count() != 1) {
         return nullptr;

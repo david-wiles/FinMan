@@ -68,7 +68,6 @@ bool Auth::query_for_user(std::string username, const std::string& password)
 
     bool found = *res->get_row(0) == expected;
 
-    delete(res);
     return found;
 }
 
@@ -108,14 +107,12 @@ std::string Auth::new_user()
 
         if (password == password2) {
 
-            auto* query = new SQLite3QueryBuilder("auth_user");
+            auto query = new SQLite3QueryBuilder("auth_user");
             query
             ->insert({"username", "pass_hash"})
             ->values({{username, hash_password(password)}});
 
             SQLite3Instance::getInstance()->query(query);
-
-            delete(query);
 
             if (query_for_user(username, password))
                 return username;

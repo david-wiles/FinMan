@@ -9,7 +9,7 @@ bool Asset::create(const std::vector<std::string> &vals)
 
     // TODO input validation
 
-    auto* query = new SQLite3QueryBuilder("asset");
+    auto query = new SQLite3QueryBuilder("asset");
     query
     ->insert({"owner", "value", "name", "type", "buy_date"})
     ->values({vals});

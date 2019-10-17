@@ -13,7 +13,7 @@ public:
 
     virtual void print() = 0;
 
-    ~AbstractView() { delete(_obj); }
+    ~AbstractView() = default;
 
 protected:
     QueryResult* _obj;
