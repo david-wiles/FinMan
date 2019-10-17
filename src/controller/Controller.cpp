@@ -1,20 +1,25 @@
-#include <iostream>
-#include <db/QueryResult.h>
-#include <db/SQLite3Instance.h>
-#include <db/SQLite3QueryBuilder.h>
 #include "controller/Controller.h"
-#include <view/TableView.h>
-#include <model/Account.h>
-#include <model/Transaction.h>
+
+#include <iostream>
 #include <ctime>
 #include <util.h>
 #include <fstream>
 #include <sstream>
+#include <regex>
+
+#include <db/QueryResult.h>
+#include <db/SQLite3Instance.h>
+#include <db/SQLite3QueryBuilder.h>
+
 #include <model/Asset.h>
 #include <model/Income.h>
 #include <model/Debt.h>
 #include <model/Investment.h>
 #include <model/Budget.h>
+#include <model/Account.h>
+#include <model/Transaction.h>
+
+#include <view/TableView.h>
 
 
 std::vector<std::string> Controller::cmd_str_arr = {
@@ -90,7 +95,7 @@ int new_account(const std::string& username)
     std::string interest;
     bool valid = false;
 
-    std::cout << "Enter a custodian for this account (press enter if none): " << std::endl;
+    std::cout << "Enter the username of the custodian for this account (press enter if none): " << std::endl;
     std::cin >> custodian;
 
     if (custodian.empty()) {
@@ -123,7 +128,7 @@ int new_account(const std::string& username)
     }
 
     std::cout << "Enter the type of account (checking, savings, retirement, etc.): " << std::endl;
-    std::cin >> type;
+    std::getline(std::cin, type);
 
     valid = false;
     while (!valid) {
@@ -319,7 +324,33 @@ int Controller::transaction(const std::string& username, const std::vector<std::
 
 int new_asset(const std::string& username)
 {
-    return 0;
+    std::string value;
+    std::string type;
+    std::string name;
+    bool valid = false;
+
+    std::cout << "Enter the type of asset: " << std::endl;
+    std::getline(std::cin, type);
+
+    std::cout << "Enter a name for the asset: " << std::endl;
+    std::getline(std::cin, name);
+
+    while (!valid) {
+        std::cout << "Enter the value of the asset: " << std::endl;
+        std::cin >> value;
+
+        try {
+            std::stod(value);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Asset value must be a decimal number." << std::endl;
+        }
+    }
+
+    if (Asset::create({username, type, name, value}))
+        return 0;
+    else
+        return error_msg("Could not create asset.");
 }
 
 int Controller::assets(const std::string& username, const std::vector<std::string>* params)
@@ -328,17 +359,17 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
 
     if (action == "view") {
 
-        std::string id(get_param(params, 2));
+        std::string name(get_param(params, 2));
         auto* query = new SQLite3QueryBuilder("assets");
 
-        if (id.empty()) {
+        if (name.empty()) {
             query
             ->select({})
             ->where(std::make_pair("owner", username));
         } else {
             query
             ->select({})
-            ->where({std::make_pair("owner", username), std::make_pair("name", id)});
+            ->where({std::make_pair("owner", username), std::make_pair("name", name)});
         }
 
         auto* res = SQLite3Instance::getInstance()->query(query);
@@ -352,9 +383,9 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
 
     } else if (action == "remove") {
 
-        std::string id(get_param(params, 2));
+        std::string name(get_param(params, 2));
         auto* query = new SQLite3QueryBuilder("asset");
-        query->where({std::make_pair("owner", username), std::make_pair("name", id)});
+        query->where({std::make_pair("owner", username), std::make_pair("name", name)});
 
         Asset asset(query);
         asset.del();
@@ -362,33 +393,125 @@ int Controller::assets(const std::string& username, const std::vector<std::strin
         return 0;
     } else if (action == "modify") {
 
-        std::string id(get_param(params, 2));
+        std::string name(get_param(params, 2));
         std::string opt(get_param(params, 3));
         std::string val(get_param(params, 4));
 
         auto query = new SQLite3QueryBuilder("asset");
-        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
-        // TODO determine cols
-
+        query->where({std::make_pair("owner", username), std::make_pair("name", name)});
         Asset asset(query);
+        bool success;
 
-        if (asset.get()) {
-            if (asset.update({std::make_pair("col", val)}))
-                return 0;
-            else
-                return error_msg("Could not update asset.");
-        } else {
-            return error_msg("Could not find asset.");
-        }
+        if (opt == "--value")
+            success = asset.update({std::make_pair("value", val)});
+        else if (opt == "--name")
+            success = asset.update({std::make_pair("type", val)});
+        else
+            return error_msg("Invalid option.");
 
+        if (success)
+            return 0;
+        else
+            return error_msg("Could not update asset.");
     } else
-        return error_msg("Could not interpret commands.");
+        return error_msg("Invalid command.");
 }
 
 
 int new_income(const std::string& username)
 {
-    return 0;
+    std::string type;
+    std::string hours;
+    std::string amount;
+    std::string pay_frequency;
+    std::string to_acct;
+    bool valid = false;
+
+    while (!valid) {
+        std::cout << "Enter the type of income (salary or hourly): " << std::endl;
+        std::cin >> type;
+
+        if (type == "salary" || type == "hourly") {
+            valid = true;
+        } else {
+            std::cout << "Income must be salary or hourly." << std::endl;
+        }
+    }
+
+    if (type == "hourly") {
+        valid = false;
+        while (!valid) {
+            std::cout << "Enter the number of hours per week: " << std::endl;
+            std::cin >> hours;
+
+            try {
+                std::stoi(hours);
+                valid = true;
+            } catch (std::invalid_argument& err) {
+                std::cout << "Hours must be an integer number. " << std::endl;
+            }
+        }
+    }
+
+    if (type == "hourly") {
+        valid = false;
+        while (!valid) {
+            std::cout << "Enter the pay per hour: " << std::endl;
+            std::cin >> amount;
+
+            try {
+                std::stod(amount);
+                valid = true;
+            } catch (std::invalid_argument &err) {
+                std::cout << "Amount must be a decimal number." << std::endl;
+            }
+        }
+    } else if (type == "salary") {
+        valid = false;
+        while (!valid) {
+            std::cout << "Enter the yearly salary: " << std::endl;
+            std::cin >> amount;
+
+            try {
+                std::stod(amount);
+                valid = true;
+            } catch (std::invalid_argument &err) {
+                std::cout << "Amount must be a decimal number." << std::endl;
+            }
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the pay frequency, in terms of paychecks per year (i.e. 52 for weekly, 12 for monthly, etc): " << std::endl;
+        std::cin >> pay_frequency;
+
+        try {
+            std::stoi(pay_frequency);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Frequency must be an integer number." << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the account number to which the income will be deposited: " << std::endl;
+        std::cin >> to_acct;
+
+        auto query = new SQLite3QueryBuilder("account");
+        query->where({std::make_pair("owner", username), std::make_pair("acct_num", to_acct)});
+        Account to(query);
+        if (to.get()->row_count() == 1)
+            valid = true;
+        else
+            std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+    }
+
+    if (Income::create({username, type, hours, amount, pay_frequency, to_acct}))
+        return 0;
+    else
+        return error_msg("Could not create income.");
 }
 
 int Controller::income(const std::string& username, const std::vector<std::string>* params)
@@ -463,7 +586,86 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 
 int new_debt(const std::string& username)
 {
-    return 0;
+    std::string principal;
+    std::string interest;
+    std::string start_date;
+    std::string maturity_date;
+    std::string type;
+    std::string from_acct;
+    bool valid = false;
+
+    while (!valid) {
+        std::cout << "Enter the principal amount: " << std::endl;
+        std::cin >> principal;
+
+        try {
+            std::stod(principal);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Principal must be a decimal number. " << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the interest rate: " << std::endl;
+        std::cin >> interest;
+
+        try {
+            std::stod(interest);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Interest must be a decimal number. " << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the debt start date in YYYY-MM-DD format: " << std::endl;
+        std::cin >> start_date;
+
+        try {
+            if (std::regex_match(start_date, std::regex("^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$")))
+                valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "The date must be in YYYY-MM-DD format. " << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the debt maturity date in YYYY-MM-DD format: " << std::endl;
+        std::cin >> maturity_date;
+
+        try {
+            if (std::regex_match(start_date, std::regex("^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$")))
+                valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "The date must be in YYYY-MM-DD format. " << std::endl;
+        }
+    }
+
+    std::cout << "Enter the debt type (i.e. mortgage, car, other loan): " << std::endl;
+    std::getline(std::cin, type);
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the account number from which the debt will be paid: " << std::endl;
+        std::cin >> from_acct;
+
+        auto query = new SQLite3QueryBuilder("account");
+        query->where({std::make_pair("owner", username), std::make_pair("acct_num", from_acct)});
+        Account to(query);
+        if (to.get()->row_count() == 1)
+            valid = true;
+        else
+            std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+    }
+
+    if (Debt::create({username, principal, interest, start_date, maturity_date, type, from_acct}))
+        return 0;
+    else
+        return error_msg("Could not create debt.");
 }
 
 int Controller::debt(const std::string& username, const std::vector<std::string>* params)
@@ -533,8 +735,80 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
         return error_msg("Invalid command.");
 }
 
+
 int new_investment(const std::string& username)
 {
+    std::string type;
+    std::string ticker;
+    std::string buy_price;
+    std::string num_shares;
+    std::string buy_date;
+    std::string acct;
+    bool valid = false;
+
+    std::cout << "Enter the type of security: " << std::endl;
+    std::getline(std::cin, type);
+
+    std::cout << "Enter the security's ticker symbol: " << std::endl;
+    std::cin >> ticker;
+
+    while (!valid) {
+        std::cout << "Enter the buy price (per share): " << std::endl;
+        std::cin >> buy_price;
+
+        try {
+            std::stod(buy_price);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Buy price must be a valid decimal number. " << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the number of shares purchased: " << std::endl;
+        std::cin >> num_shares;
+
+        try {
+            std::stoi(num_shares);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Number of shares must be a valid decimal number. " << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the buy date in YYYY-MM-DD format: " << std::endl;
+        std::cin >> buy_date;
+
+        try {
+            if (std::regex_match(buy_date, std::regex("^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$")))
+                valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "The date must be in YYYY-MM-DD format. " << std::endl;
+        }
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the account number with which this security was purchased." << std::endl;
+        std::cin >> acct;
+
+        auto query = new SQLite3QueryBuilder("account");
+        query->where({std::make_pair("owner", username), std::make_pair("acct_num", acct)});
+        Account to(query);
+        if (to.get()->row_count() == 1)
+            valid = true;
+        else
+            std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+    }
+
+    if (Investment::create({username, type, ticker, buy_price, num_shares, buy_date, acct}))
+        return 0;
+    else
+        return error_msg("Could not create investment.");
+
     return 0;
 }
 
@@ -608,6 +882,55 @@ int Controller::investments(const std::string& username, const std::vector<std::
 
 int new_budget(const std::string& username)
 {
+    std::string user;
+    std::string goal_account;
+    std::string goal_amount;
+    std::string description;
+    bool valid = false;
+
+    while (!valid) {
+        std::cout << "Enter the username of the user who this budget is for: " << std::endl;
+        std::cin >> user;
+
+        valid = true;
+        // TODO check to make sure that the user is in the same group as logged in user, and logged in user is the head of the group
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the account number which this budget is associated with: " << std::endl;
+        std::cin >> goal_account;
+
+        auto query = new SQLite3QueryBuilder("account");
+        query->where({std::make_pair("owner", user), std::make_pair("acct_num", goal_account)});
+        Account to(query);
+        if (to.get()->row_count() == 1)
+            valid = true;
+        else
+            std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+    }
+
+    valid = false;
+    while (!valid) {
+        std::cout << "Enter the goal amount for this budget (either expenditure or savings): " << std::endl;
+        std::cin >> goal_amount;
+
+        try {
+            std::stod(goal_amount);
+            valid = true;
+        } catch (std::invalid_argument &err) {
+            std::cout << "Goal amount must be a decimal number" << std::endl;
+        }
+    }
+
+    std::cout << "Enter a description of this budget: " << std::endl;
+    std::getline(std::cin, description);
+
+    if (Budget::create({user, goal_account, goal_amount, description}))
+        return 0;
+    else
+        return error_msg("Could not create budget.");
+
     return 0;
 }
 
