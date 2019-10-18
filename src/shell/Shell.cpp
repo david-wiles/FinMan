@@ -23,7 +23,7 @@ void Shell::loop()
 {
     int status = 0;
 
-    update();
+    //update();
 
     do {
         status = Shell::execute(this->_username, Shell::get_args());
@@ -42,9 +42,6 @@ std::vector<std::string> Shell::get_args()
 
     std::string input_str(input);
     std::stringstream ss(input_str);
-    {
-        delete(_builder);
-    }
 
     // Split line into words
     std::string token;
@@ -60,7 +57,7 @@ int Shell::execute(const std::string& username, const std::vector<std::string>& 
         int i = 0;
         for (auto &itr: Controller::cmd_str_arr) {
             if (args.at(0) == itr) {
-                return (*Controller::cmds[i])(username, &args);
+                return (*Controller::cmds[i])(username, args);
             }
             i++;
         }

@@ -58,7 +58,8 @@ void SQLite3Instance::init_db()
         {"auth_user", false},
         {"account", false},
         {"transaction", false},
-        {"income", false}
+        {"income", false},
+        {"asset", false}
     });
 
     if (sqlite3_exec(this->db_instance, sql, check_tables, tables, &this->err) == SQLITE_OK) {
