@@ -55,11 +55,15 @@ void SQLite3Instance::init_db()
     this->err = nullptr;
 
     auto tables = new std::unordered_map<std::string, bool>({
-        {"auth_user", false},
         {"account", false},
-        {"transaction", false},
+        {"asset", false},
+        {"auth_user", false},
+        {"budget", false},
+        {"debt", false},
+        {"family", false},
         {"income", false},
-        {"asset", false}
+        {"investment", false},
+        {"transaction", false}
     });
 
     if (sqlite3_exec(this->db_instance, sql, check_tables, tables, &this->err) == SQLITE_OK) {
