@@ -28,7 +28,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
         std::tm* now = std::localtime(&rawtime);
 
         std::tm* transaction_tm = {};
-        std::istringstream(vals.at(4)) >> std::get_time(transaction_tm, "%Y-%m-%d-%H-%M-%S");
+        std::istringstream(vals.at(4)) >> std::get_time(transaction_tm, "%Y-%m-%d %H:%M:%S");
 
         // Update amounts in account if transaction date is before or equals current time
         if (now - transaction_tm >= 0) {

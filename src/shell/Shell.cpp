@@ -96,7 +96,7 @@ void Shell::update()
             std::tm* now = std::localtime(&rawtime);
 
             std::tm* transaction_tm = {};
-            std::istringstream(t.at(4)) >> std::get_time(transaction_tm, "%Y-%m-%d-%H-%M-%S");
+            std::istringstream(t.at(4)) >> std::get_time(transaction_tm, "%Y-%m-%d %H:%M:%S");
 
             if (now - transaction_tm > 0) {
 

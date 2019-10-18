@@ -31,7 +31,7 @@ std::vector<std::string> Controller::cmd_str_arr = {
         "asset",
         "income",
         "debt",
-        "investments",
+        "investment",
         "budget",
         "overview",
         "family"
@@ -46,7 +46,7 @@ int (*Controller::cmds[]) (const std::string&, const std::vector<std::string>) =
         &asset,
         &income,
         &debt,
-        &investments,
+        &investment,
         &budget,
         &overview,
         &family
@@ -665,6 +665,7 @@ int new_debt(const std::string& username)
         }
     }
 
+    std::cin.ignore();
     std::cout << "Enter the debt type (i.e. mortgage, car, other loan): " << std::endl;
     std::getline(std::cin, type);
 
@@ -768,6 +769,7 @@ int new_investment(const std::string& username)
     std::string acct;
     bool valid = false;
 
+    std::cin.ignore();
     std::cout << "Enter the type of security: " << std::endl;
     std::getline(std::cin, type);
 
@@ -834,7 +836,7 @@ int new_investment(const std::string& username)
     return 0;
 }
 
-int Controller::investments(const std::string& username, const std::vector<std::string> params)
+int Controller::investment(const std::string& username, const std::vector<std::string> params)
 {
     std::string action(get_param(&params, 1));
 
@@ -932,6 +934,7 @@ int new_budget(const std::string& username)
         }
     }
 
+    std::cin.ignore();
     std::cout << "Enter a description of this budget: " << std::endl;
     std::getline(std::cin, description);
 
