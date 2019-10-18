@@ -16,12 +16,12 @@ std::string SQLite3QueryBuilder::build_where(int val_index)
 
         int opt_size = _opt_where.size();
         for (int i = 0; i < opt_size - 1; ++i) {
-            std::pair<std::string, std::string> pair = _where.at(i);
+            std::pair<std::string, std::string> pair = _opt_where.at(i);
             where_str += pair.first + " = ?" + std::to_string(val_index++) + " OR ";
             _vals->push_back(pair.second);
         }
-        where_str += _where.at(opt_size - 1).first + " = ?" + std::to_string(val_index++) + " ) ";
-        _vals->push_back(_where.at(opt_size - 1).second);
+        where_str += _opt_where.at(opt_size - 1).first + " = ?" + std::to_string(val_index++) + " ) ";
+        _vals->push_back(_opt_where.at(opt_size - 1).second);
 
         if (!_where.empty())
             where_str += " AND ";

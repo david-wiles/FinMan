@@ -97,8 +97,10 @@ int new_account(const std::string& username)
     std::string interest;
     bool valid = false;
 
+    std::cin.ignore();
+
     std::cout << "Enter the username of the custodian for this account (press enter if none): " << std::endl;
-    std::cin >> custodian;
+    std::getline(std::cin, custodian);
 
     if (custodian.empty()) {
         custodian = username;
@@ -129,6 +131,7 @@ int new_account(const std::string& username)
         }
     }
 
+    std::cin.ignore();
     std::cout << "Enter the type of account (checking, savings, retirement, etc.): " << std::endl;
     std::getline(std::cin, type);
 

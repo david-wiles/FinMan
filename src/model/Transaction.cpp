@@ -21,8 +21,6 @@ bool Transaction::create(const std::vector<std::string> &vals)
 
     bool err = SQLite3Instance::getInstance()->query(query) == nullptr;
 
-    delete(query);
-
     if (!err) {
 
         std::time_t rawtime;

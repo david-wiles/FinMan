@@ -18,7 +18,7 @@ public:
 
     void build() override;
 
-    ~SQLite3QueryBuilder() override { delete(_vals); };
+    ~SQLite3QueryBuilder() override = default;
 
 private:
     // Build the where condition from WHERE OR and WHERE AND

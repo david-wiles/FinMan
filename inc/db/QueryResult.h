@@ -23,7 +23,7 @@ public:
     inline const std::vector<std::vector<std::string>>* get_rows() const { return _rows; };
     inline int row_count() { return _rows->size(); };
 
-    ~QueryResult() { delete(_col_names); delete(_rows); };
+    ~QueryResult() = default;
 
 private:
     const std::vector<std::string>* _col_names;
