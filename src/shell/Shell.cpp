@@ -62,6 +62,7 @@ int Shell::execute(const std::string& username, const std::vector<std::string>& 
             i++;
         }
     }
+    std::cout << "That is not a valid command. Type 'help' to see a full list of commands and options." << std::endl;
 
     return 0;
 }

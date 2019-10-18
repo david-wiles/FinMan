@@ -28,7 +28,7 @@ std::vector<std::string> Controller::cmd_str_arr = {
         "help",
         "account",
         "transaction",
-        "assets",
+        "asset",
         "income",
         "debt",
         "investments",
@@ -43,7 +43,7 @@ int (*Controller::cmds[]) (const std::string&, const std::vector<std::string>) =
         &help,
         &account,
         &transaction,
-        &assets,
+        &asset,
         &income,
         &debt,
         &investments,
@@ -336,6 +336,7 @@ int new_asset(const std::string& username)
     std::string name;
     bool valid = false;
 
+    std::cin.ignore();
     std::cout << "Enter the type of asset: " << std::endl;
     std::getline(std::cin, type);
 
@@ -360,14 +361,14 @@ int new_asset(const std::string& username)
         return error_msg("Could not create asset.");
 }
 
-int Controller::assets(const std::string& username, const std::vector<std::string> params)
+int Controller::asset(const std::string& username, const std::vector<std::string> params)
 {
     std::string action(get_param(&params, 1));
 
     if (action == "view") {
 
         std::string name(get_param(&params, 2));
-        auto query = new SQLite3QueryBuilder("assets");
+        auto query = new SQLite3QueryBuilder("asset");
 
         if (name.empty()) {
             query
@@ -952,9 +953,9 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
         auto query = new SQLite3QueryBuilder("budget");
 
         if (id.empty()) {
-            query->select({})->where(std::make_pair("owner", username));
+            query->select({})->where(std::make_pair("user", username));
         } else {
-            query->select({})->where({std::make_pair("owner", username), std::make_pair("id", id)});
+            query->select({})->where({std::make_pair("user", username), std::make_pair("id", id)});
         }
 
         TableView::view(SQLite3Instance::getInstance()->query(query));
@@ -971,7 +972,7 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
         if (id.empty())
             return error_msg("A specific budget must be specified.");
 
-        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+        query->where({std::make_pair("user", username), std::make_pair("id", id)});
 
         Budget budget(query);
 
@@ -998,7 +999,7 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
         if (id.empty())
             return error_msg("A specific budget must be specified.");
 
-        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
+        query->where({std::make_pair("user", username), std::make_pair("id", id)});
 
         Budget budget(query);
 
@@ -1015,10 +1016,15 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
 
 int Controller::overview(const std::string &username, const std::vector<std::string> params)
 {
+    std::cout << "Accounts" << std::endl;
     Controller::account(username, {"account", "view"});
-    Controller::assets(username, {"assets", "view"});
+    std::cout << "\nAssets" << std::endl;
+    Controller::asset(username, {"asset", "view"});
+    std::cout << "\nIncomes" << std::endl;
     Controller::income(username, {"income", "view"});
+    std::cout << "\nDebt" << std::endl;
     Controller::debt(username, {"debt", "view"});
+    std::cout << "\nBudget" << std::endl;
     Controller::budget(username, {"budget", "view"});
     return 0;
 }

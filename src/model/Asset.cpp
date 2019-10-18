@@ -11,7 +11,7 @@ bool Asset::create(const std::vector<std::string> &vals)
 
     auto query = new SQLite3QueryBuilder("asset");
     query
-    ->insert({"owner", "value", "name", "type", "buy_date"})
+    ->insert({"owner", "value", "name", "type"})
     ->values({vals});
 
     return SQLite3Instance::getInstance()->query(query) != nullptr;

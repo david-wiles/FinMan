@@ -19,7 +19,7 @@ namespace Controller
     int help(const std::string& unused_user, std::vector<std::string> params);
     int account(const std::string& username, std::vector<std::string> params);
     int transaction(const std::string& username, std::vector<std::string> params);
-    int assets(const std::string& username, std::vector<std::string> params);
+    int asset(const std::string& username, std::vector<std::string> params);
     int income(const std::string& username, std::vector<std::string> params);
     int investments(const std::string& username, std::vector<std::string> params);
     int budget(const std::string& username, std::vector<std::string> params);

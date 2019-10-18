@@ -35,7 +35,7 @@ public:
      */
     virtual QueryResult* query(AbstractQueryBuilder* builder) = 0;
 
-    virtual ~AbstractDBInstance() { delete(_instance); };
+    virtual ~AbstractDBInstance() = default;
 
 protected:
     AbstractDBInstance() = default;
