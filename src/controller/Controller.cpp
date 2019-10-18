@@ -27,8 +27,10 @@ std::vector<std::string> Controller::cmd_str_arr = {
         "goodbye",
         "help",
         "account",
+        "transaction",
         "assets",
         "income",
+        "debt",
         "investments",
         "budget",
         "overview",
@@ -702,6 +704,7 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
 
         TableView::view(SQLite3Instance::getInstance()->query(query));
         return 0;
+
     } else if (action == "add") {
 
         return new_debt(username);
