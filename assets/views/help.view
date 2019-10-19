@@ -1,0 +1,30 @@
+Accounts: view, create, modify
+
+    account view [account num]
+        View all accounts where you are the owner or custodian, or view a specific account
+
+    account create
+        Create a new account
+
+    account modify [account num] [attribute] [value]
+        Modify the account's owner (--owner) or custodian (--custodian) with the new value
+
+Transaction: view, withdraw, deposit, transfer
+
+    transaction [acct] view
+        View all transactions for a given account
+
+    transaction [acct] withdraw [amt] [description]
+        Withdraw money from account
+
+    transaction [acct] deposit [amt] [description]
+        Deposit money into account
+
+    transaction [acct] transfer [amt] [description]
+        Transfer money into account
+
+Assets:
+
+    asset view
+
+

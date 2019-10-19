@@ -158,11 +158,11 @@ int new_account(const std::string& username)
 
 int Controller::account(const std::string& username, const std::vector<std::string> params)
 {
-    std::string action(get_param(&params, 1));
+    std::string action = get_param(&params, 1);
 
     if (action == "view") {
 
-        std::string acct(get_param(&params, 2));
+        std::string acct = get_param(&params, 2);
 
         auto query = new SQLite3QueryBuilder("account");
 
@@ -200,13 +200,13 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
     } else if (action == "modify") {
 
-        std::string acct(get_param(&params, 3));
+        std::string acct = get_param(&params, 2);
 
         if (!acct.empty()) {
 
-            std::string opt(get_param(&params, 4));
-            std::string col(get_param(&params, 5));
+            std::string opt(get_param(&params, 3));
             auto query = new SQLite3QueryBuilder("account");
+
             // Update account where owner or custodian is user and acct_num is acct
             query
             ->opt_where({
@@ -218,7 +218,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
 
             if (!opt.empty()) {
 
-                std::string val = get_param(&params, 6);
+                std::string val = get_param(&params, 4);
                 bool success;
 
                 if (opt == "--owner")
@@ -252,34 +252,14 @@ int Controller::transaction(const std::string& username, const std::vector<std::
     if (acct.empty())
         return error_msg("An account number must be provided to perform a transaction.");
 
-    if (action == "-f") {
-
-        std::string filename = get_param(&params, 3);
-
-        // Insert from a list of transactions
-        std::ifstream transact_f(filename);
-        std::string line;
-        auto transactions = new std::vector<std::vector<std::string>>();
-
-        while (std::getline(transact_f, line)) {
-            std::string token;
-            std::stringstream ss(line);
-            std::vector<std::string> tokens;
-
-            while (ss >> token)
-                tokens.push_back(token);
-
-            transactions->push_back(tokens);
-        }
-
+    if (action == "view") {
         auto query = new SQLite3QueryBuilder("transaction");
         query
-        ->insert({"type", "amount", "from_acct", "to_acct", "date"})
-        ->values(transactions);
+        ->select({})
+        ->opt_where({std::make_pair("to_acct", acct), std::make_pair("from_acct", acct)});
 
-        if (SQLite3Instance::getInstance()->query(query) == nullptr)
-            return error_msg("Could not create transactions. Check the format of the file and try again.");
-
+        auto res = SQLite3Instance::getInstance()->query(query);
+        TableView::view(res);
         return 0;
 
     } else if (action == "withdraw") {
@@ -290,7 +270,7 @@ int Controller::transaction(const std::string& username, const std::vector<std::
         if (amt.empty())
             return error_msg("An amount must be provided to make a withdrawal.");
 
-        if (!Transaction::create({"withdraw", amt, acct, "", util::now()}))
+        if (!Transaction::create({"withdraw", amt, acct, "", util::now(), description}))
             return error_msg("Could not make withdrawal.");
 
         return 0;
@@ -303,7 +283,7 @@ int Controller::transaction(const std::string& username, const std::vector<std::
         if (amt.empty())
             return error_msg("An amount must be provided to make a deposit.");
 
-        if (!Transaction::create({"deposit", amt, "", acct, util::now()}))
+        if (!Transaction::create({"deposit", amt, "", acct, util::now(), description}))
             return error_msg("Could not make deposit.");
 
         return 0;
@@ -363,11 +343,11 @@ int new_asset(const std::string& username)
 
 int Controller::asset(const std::string& username, const std::vector<std::string> params)
 {
-    std::string action(get_param(&params, 1));
+    std::string action = get_param(&params, 1);
 
     if (action == "view") {
 
-        std::string name(get_param(&params, 2));
+        std::string name = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("asset");
 
         if (name.empty()) {
@@ -391,7 +371,7 @@ int Controller::asset(const std::string& username, const std::vector<std::string
 
     } else if (action == "remove") {
 
-        std::string name(get_param(&params, 2));
+        std::string name = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("asset");
         query->where({std::make_pair("owner", username), std::make_pair("name", name)});
 
@@ -401,9 +381,9 @@ int Controller::asset(const std::string& username, const std::vector<std::string
         return 0;
     } else if (action == "modify") {
 
-        std::string name(get_param(&params, 2));
-        std::string opt(get_param(&params, 3));
-        std::string val(get_param(&params, 4));
+        std::string name = get_param(&params, 2);
+        std::string opt = get_param(&params, 3);
+        std::string val = get_param(&params, 4);
 
         auto query = new SQLite3QueryBuilder("asset");
         query->where({std::make_pair("owner", username), std::make_pair("name", name)});
@@ -567,9 +547,9 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 
     } else if (action == "modify") {
 
-        std::string id(get_param(&params, 2));
-        std::string opt(get_param(&params, 3));
-        std::string val(get_param(&params, 4));
+        std::string id = get_param(&params, 2);
+        std::string opt = get_param(&params, 3);
+        std::string val = get_param(&params, 4);
         std::string col;
 
         if (opt == "--type")
@@ -691,11 +671,11 @@ int new_debt(const std::string& username)
 
 int Controller::debt(const std::string& username, const std::vector<std::string> params)
 {
-    std::string action(get_param(&params, 1));
+    std::string action = get_param(&params, 1);
 
     if (action == "view") {
 
-        std::string id(get_param(&params, 2));
+        std::string id = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("debt");
 
         if (id.empty()) {
@@ -713,7 +693,7 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
 
     } else if (action == "remove") {
 
-        std::string id(get_param(&params, 2));
+        std::string id = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("debt");
 
         if (id.empty())
@@ -731,9 +711,9 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
 
     } else if (action == "modify") {
 
-        std::string id(get_param(&params, 2));
-        std::string opt(get_param(&params, 3));
-        std::string val(get_param(&params, 4));
+        std::string id = get_param(&params, 2);
+        std::string opt = get_param(&params, 3);
+        std::string val = get_param(&params, 4);
 
         if (opt != "--from_acct")
             return error_msg("Could not update debt with the given arguments.");
@@ -838,11 +818,11 @@ int new_investment(const std::string& username)
 
 int Controller::investment(const std::string& username, const std::vector<std::string> params)
 {
-    std::string action(get_param(&params, 1));
+    std::string action = get_param(&params, 1);
 
     if (action == "view") {
 
-        std::string id(get_param(&params, 2));
+        std::string id = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("investment");
 
         if (id.empty()) {
@@ -859,7 +839,7 @@ int Controller::investment(const std::string& username, const std::vector<std::s
 
     } else if (action == "remove") {
 
-        std::string id(get_param(&params, 2));
+        std::string id =get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("investment");
 
         if (id.empty())
@@ -948,11 +928,11 @@ int new_budget(const std::string& username)
 
 int Controller::budget(const std::string& username, const std::vector<std::string> params)
 {
-    std::string action(get_param(&params, 1));
+    std::string action = get_param(&params, 1);
 
     if (action == "view") {
 
-        std::string id(get_param(&params, 2));
+        std::string id = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("budget");
 
         if (id.empty()) {
@@ -969,7 +949,7 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
 
     } else if (action == "remove") {
 
-        std::string id(get_param(&params, 2));
+        std::string id = get_param(&params, 2);
         auto query = new SQLite3QueryBuilder("budget");
 
         if (id.empty())
@@ -987,9 +967,9 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
 
     } else if (action == "modify") {
 
-        std::string id(get_param(&params, 2));
-        std::string opt(get_param(&params, 3));
-        std::string val(get_param(&params, 4));
+        std::string id = get_param(&params, 2);
+        std::string opt = get_param(&params, 3);
+        std::string val = get_param(&params, 4);
         std::string col;
 
         if (opt == "--goal_amount")
@@ -1035,16 +1015,22 @@ int Controller::overview(const std::string &username, const std::vector<std::str
 
 int Controller::family(const std::string &username, const std::vector<std::string> params)
 {
-    std::string action(get_param(&params, 1));
+    std::string action = get_param(&params, 1);
 
     if (action == "view") {
 
         try {
 
-            std::string get_id_sql = "SELECT family_id FROM family WHERE owner = ?1;";
+            std::string get_id_sql = "SELECT id FROM family WHERE owner = ?1;";
             auto param_id = new std::vector<std::string>{username};
             auto id_row = SQLite3Instance::getInstance()->query(get_id_sql, param_id);
-            std::string id = id_row->get_row(0)->at(0);
+            std::string id;
+
+            try {
+                id = id_row->get_row(0)->at(0);
+            } catch (std::out_of_range &err) {
+                return error_msg("Family could not be found.");
+            }
 
             std::string get_usernames_sql = "SELECT username FROM auth_user WHERE family_id = ?1;";
             auto param_usernames = new std::vector<std::string>{id};
@@ -1052,6 +1038,7 @@ int Controller::family(const std::string &username, const std::vector<std::strin
 
             TableView::view(usernames);
             return 0;
+
         } catch (std::runtime_error &err) {
             return error_msg("Could not retrieve usernames.");
         }
@@ -1071,7 +1058,7 @@ int Controller::family(const std::string &username, const std::vector<std::strin
         if (!addUser.empty()) {
 
             try {
-                std::string get_id_sql = "SELECT family_id FROM family WHERE owner = ?1;";
+                std::string get_id_sql = "SELECT id FROM family WHERE owner = ?1;";
                 auto param_id = new std::vector<std::string>{username};
                 auto id_row = SQLite3Instance::getInstance()->query(get_id_sql, param_id);
                 std::string id = id_row->get_row(0)->at(0);

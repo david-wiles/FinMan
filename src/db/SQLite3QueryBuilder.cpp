@@ -48,10 +48,12 @@ void SQLite3QueryBuilder::build()
     _sql = "";
     _vals = new std::vector<std::string>();
 
+    std::string table = "'" + _table + "'";
+
     // Build insert
     if (_type == QueryType::INSERT) {
 
-        _sql += "INSERT INTO " + _table + " ( ";
+        _sql += "INSERT INTO " + table + " ( ";
 
         // Insert columns
         if (_cols.empty()) {
@@ -111,12 +113,12 @@ void SQLite3QueryBuilder::build()
             _sql += _cols.at(num_cols - 1);
         }
 
-        _sql += " FROM " + _table + " WHERE " + build_where(1) + ";";
+        _sql += " FROM " + table + " WHERE " + build_where(1) + ";";
 
     // Build update
     } else if (_type == QueryType::UPDATE) {
         
-        _sql += "UPDATE " + _table + " SET ";
+        _sql += "UPDATE " + table + " SET ";
 
         // Build set statement
         int index = 1;
@@ -134,7 +136,7 @@ void SQLite3QueryBuilder::build()
     // Build delete
     } else if (_type == QueryType::DELETE) {
 
-        _sql += "DELETE FROM " + _table + " WHERE " + build_where(1);
+        _sql += "DELETE FROM " + table + " WHERE " + build_where(1);
 
     }
 

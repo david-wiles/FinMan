@@ -9,14 +9,14 @@
 
 bool Transaction::create(const std::vector<std::string> &vals)
 {
-    if (vals.size() != 5)
+    if (vals.size() != 6)
         return false;
 
     // TODO validation
 
     auto query = new SQLite3QueryBuilder("transaction");
     query
-    ->insert({"type", "amount", "from_acct", "to_acct", "date"})
+    ->insert({"type", "amount", "from_acct", "to_acct", "date", "description"})
     ->values({vals});
 
     bool err = SQLite3Instance::getInstance()->query(query) == nullptr;
@@ -28,7 +28,8 @@ bool Transaction::create(const std::vector<std::string> &vals)
         std::tm* now = std::localtime(&rawtime);
 
         std::tm* transaction_tm = {};
-        std::istringstream(vals.at(4)) >> std::get_time(transaction_tm, "%Y-%m-%d %H:%M:%S");
+        std::istringstream ss(vals.at(4));
+        ss >> std::get_time(transaction_tm, "%Y-%m-%d %H:%M:%S");
 
         // Update amounts in account if transaction date is before or equals current time
         if (now - transaction_tm >= 0) {
