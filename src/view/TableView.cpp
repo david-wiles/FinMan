@@ -38,9 +38,8 @@ void TableView::view(QueryResult *table)
     std::cout << std::string(total_width, '-') << std::endl;
 
     // Print rows
-    if (table->row_count() > 0)
-        std::cout << "|   ";
     for (auto &row : *table->get_rows()) {
+        std::cout << "|   ";
         index = 0;
         for (auto &val : row) {
             if ((val.size() + 7) < col_len[index])

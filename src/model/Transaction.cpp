@@ -24,15 +24,14 @@ bool Transaction::create(const std::vector<std::string> &vals)
     if (!err) {
 
         std::time_t rawtime;
-        std::time(&rawtime);
-        std::tm* now = std::localtime(&rawtime);
+        std::tm tt{};
 
-        std::tm* transaction_tm = {};
-        std::istringstream ss(vals.at(4));
-        ss >> std::get_time(transaction_tm, "%Y-%m-%d %H:%M:%S");
+        std::time(&rawtime);
+        strptime(vals.at(4).c_str(), "%Y-%m-%d %H:%M:%S", &tt);
+        std::time_t transaction_time = mktime(&tt);
 
         // Update amounts in account if transaction date is before or equals current time
-        if (now - transaction_tm >= 0) {
+        if (difftime(transaction_time, rawtime) >= 0) {
             try {
 
                 // Update from account
@@ -40,7 +39,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
                     auto from_query = new SQLite3QueryBuilder("account");
                     Account from(from_query->where(std::make_pair("acct_num", vals.at(2))));
                     auto obj = from.get();
-                    int new_amt = stoi(obj->get_row(0)->at(1)) - stoi(vals.at(1));
+                    int new_amt = stoi(obj->get_row(0)->at(3)) - stoi(vals.at(1));
                     from.update({std::make_pair("balance", std::to_string(new_amt))});
                 }
 
@@ -49,7 +48,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
                     auto to_query = new SQLite3QueryBuilder("account");
                     Account to(to_query->where(std::make_pair("acct_num", vals.at(3))));
                     auto obj = to.get();
-                    int new_amt = stoi(obj->get_row(0)->at(1)) - stoi(vals.at(1));
+                    int new_amt = stoi(obj->get_row(0)->at(3)) + stoi(vals.at(1));
                     to.update({std::make_pair("balance", std::to_string(new_amt))});
                 }
 
