@@ -9,4 +9,4 @@ The project requires the following libraries:
 - Pthreads
 - OpenSSL
 
-To run the project, build the executable with the command 'make' in this directory, and then start the program with ./PiggyBank.
+To run the project, create the MakeFile with 'cmake .', followed by 'make', and finally './PiggyBank'
