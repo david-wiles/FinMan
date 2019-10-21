@@ -20,6 +20,7 @@
 #include <model/Transaction.h>
 
 #include <view/TableView.h>
+#include <view/StaticView.h>
 
 
 std::vector<std::string> Controller::cmd_str_arr = {
@@ -84,6 +85,7 @@ int Controller::goodbye(const std::string& unused_user, const std::vector<std::s
 
 int Controller::help(const std::string& unused_user, const std::vector<std::string> params)
 {
+    StaticView::from_file("assets/views/help.view");
     return 0;
 }
 
@@ -538,7 +540,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
             return error_msg("An income name must be provided in order to remove an income. Use the command 'income view' to view the information about all of your incomes.");
 
         auto query = new SQLite3QueryBuilder("income");
-        query->where({std::make_pair("owner", username), std::make_pair("alias", id)});
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
 
         Income income(query);
         income.del();
@@ -566,7 +568,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
             return error_msg("Can't update income with the given arguments.");
 
         auto query = new SQLite3QueryBuilder("income");
-        query->where({std::make_pair("owner", username), std::make_pair("alias", id)});
+        query->where({std::make_pair("owner", username), std::make_pair("id", id)});
 
         Income income(query);
 
@@ -657,7 +659,7 @@ int new_debt(const std::string& username)
         auto query = new SQLite3QueryBuilder("account");
         query->where({std::make_pair("owner", username), std::make_pair("acct_num", from_acct)});
         Account to(query);
-        if (to.get()->row_count() == 1)
+        if (to.get() != nullptr)
             valid = true;
         else
             std::cout << "That account number doesn't correspond to a valid account." << std::endl;
@@ -802,7 +804,7 @@ int new_investment(const std::string& username)
         auto query = new SQLite3QueryBuilder("account");
         query->where({std::make_pair("owner", username), std::make_pair("acct_num", acct)});
         Account to(query);
-        if (to.get()->row_count() == 1)
+        if (to.get() != nullptr)
             valid = true;
         else
             std::cout << "That account number doesn't correspond to a valid account." << std::endl;
@@ -876,7 +878,7 @@ int new_budget(const std::string& username)
         std::cout << "Enter the username of the user who this budget is for: " << std::endl;
         std::cin >> user;
 
-        std::string sql = "SELECT username FROM auth_user WHERE username = ?1 AND family_id = ( SELECT family_id FROM family WHERE owner = ?2 );";
+        std::string sql = "SELECT username FROM auth_user WHERE username = ?1 AND family_id = ( SELECT id FROM family WHERE owner = ?2 );";
         auto params = new std::vector<std::string>{user, username};
         auto res = SQLite3Instance::getInstance()->query(sql, params);
 

@@ -1,4 +1,5 @@
-#include "db/AbstractQueryBuilder.h"
+#include "db/AbstractQueryBuilder.h"    //{username, principal, interest, start_date, maturity_date, type, from_acct}
+
 
 
 AbstractQueryBuilder* AbstractQueryBuilder::select(std::vector<std::string> cols)

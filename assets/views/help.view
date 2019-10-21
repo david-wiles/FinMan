@@ -23,8 +23,98 @@ Transaction: view, withdraw, deposit, transfer
     transaction [acct] transfer [amt] [description]
         Transfer money into account
 
-Assets:
+Assets: view, remove, add, modify
 
-    asset view
+    asset view [name]
+        View all assets or a specific asset
 
+    asset remove [name]
+        Remove an asset
 
+    asset add
+        Create a new asset entry
+
+    asset modify [name] [option] [value]
+        Modify an asset (--name, --value)
+
+Incomes: view, add, remove, modify
+
+    income view [id]
+        View all incomes or a specific income
+
+    income add
+        Add a new recurring income
+
+    income remove [id]
+        Remove an income
+
+    income modify [id] [option] [value]
+        Modify a specific income (--type, --hours, --amount, --pay_frequency, --to_acct)
+
+Debts: view, add, remove, modify
+
+    debt view [id]
+        View all debts or a specific debt
+
+    debt add
+        Create a new debt
+
+    debt remove [id]
+        Remove a debt entry
+
+    debt modify [id] [option] [value]
+        Modify a debt entry (--from_acct)
+
+Investments: view, add, remove
+
+    investment view [id]
+        View all investments or a specific investment
+
+    investment add
+        Add a new investment
+
+    investment remove [id]
+        Remove a specific investment
+
+Budget: view, add, remove, modify
+
+    budget view [id]
+        View all budgets or a specific budget
+
+    budget add
+        Create a new budget
+
+    budget remove [id]
+        Remove a specific budget
+
+    budget modify [id] [option] [value]
+        Modify a budget (--goal_amount, --description)
+
+Family: view, create, add, remove
+
+    family view:
+        View all members of a family
+
+    family create:
+        Create a new family, with you as the owner
+
+    family add [username]:
+        Add a user to your family
+
+    family remove [username]:
+        Remove a user from your family
+
+Overview:
+
+    overview
+        View all of your accounts, assets, incomes, debts, and budgets.
+
+Hello:
+
+    hello
+        Say hello
+
+Goodbye:
+
+    goodbye:
+        exit the program

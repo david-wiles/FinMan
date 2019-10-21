@@ -3,12 +3,12 @@
 
 bool Income::create(const std::vector<std::string> &vals)
 {
-    if (vals.size() != 5)
+    if (vals.size() != 6)
         return false;
 
     auto query = new SQLite3QueryBuilder("income");
     query
-    ->insert({"owner", "amount", "type", "hours", "pay_freq"})
+    ->insert({"owner", "type", "hours", "amount", "pay_frequency", "to_acct"})
     ->values({vals});
 
     return SQLite3Instance::getInstance()->query(query) != nullptr;

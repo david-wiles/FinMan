@@ -20,7 +20,5 @@ bool Account::create(const std::vector<std::string>& vals)
 
 void Account::del()
 {
-    // Make account inactive to preserve relational integrity
-    this->_builder->update(std::make_pair("active", "false"));
-    SQLite3Instance::getInstance()->query(this->_builder);
+    // Does nothing to preserve database integrity
 }

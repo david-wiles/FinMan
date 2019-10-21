@@ -9,14 +9,14 @@
 #include <model/Transaction.h>
 #include <ctime>
 #include <iomanip>
+#include <view/StaticView.h>
 
 
 Shell::Shell(std::string username) : _username(username)
 {
     // Print welcome message once user has been authenticated
-    std::string welcome("Hello");
-    std::cout << welcome << std::endl;
-    this->_prompt = username += "@FinMan > ";
+    StaticView::from_file("assets/views/intro.view");
+    this->_prompt = username += "@PiggyBank > ";
 }
 
 void Shell::loop()

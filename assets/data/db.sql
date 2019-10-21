@@ -101,6 +101,7 @@ create table income
     hours         decimal default 0 not null,
     amount        decimal not null,
     pay_frequency integer default 1 not null,
+    type          text    not null,
     to_acct       integer not null
         references account
             on update cascade on delete cascade,
