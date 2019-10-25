@@ -1,0 +1,1 @@
+#include "model/investment.hxx"
