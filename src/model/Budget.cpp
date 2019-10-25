@@ -10,5 +10,7 @@ bool Budget::create(const std::vector<std::string> &vals)
     auto query = new SQLite3QueryBuilder("budget");
     query->insert({"user", "goal_acct", "goal_amount", "description"})->values({vals});
 
-    return SQLite3Instance::getInstance()->query(query) != nullptr;
+    bool res = SQLite3Instance::getInstance()->query(query) != nullptr;
+    delete query;
+    return res;
 }

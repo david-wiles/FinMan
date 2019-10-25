@@ -15,7 +15,9 @@ bool Account::create(const std::vector<std::string>& vals)
     ->insert({"acct_num", "owner", "custodian", "balance", "type", "interest"})
     ->values({vals});
 
-    return SQLite3Instance::getInstance()->query(query) != nullptr;
+    bool res = SQLite3Instance::getInstance()->query(query) != nullptr;
+    delete query;
+    return res;
 }
 
 void Account::del()

@@ -11,5 +11,7 @@ bool Income::create(const std::vector<std::string> &vals)
     ->insert({"owner", "type", "hours", "amount", "pay_frequency", "to_acct"})
     ->values({vals});
 
-    return SQLite3Instance::getInstance()->query(query) != nullptr;
+    bool res = SQLite3Instance::getInstance()->query(query) != nullptr;
+    delete query;
+    return res;
 }

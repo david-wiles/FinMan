@@ -11,6 +11,8 @@ bool Investment::create(const std::vector<std::string> &vals)
     auto query = new SQLite3QueryBuilder("investment");
     query->insert({"owner", "type", "ticker", "buy_price", "num_shares", "buy_date", "acct"})->values({vals});
 
-    return SQLite3Instance::getInstance()->query(query) != nullptr;
+    bool res = SQLite3Instance::getInstance()->query(query) != nullptr;
+    delete query;
+    return res;
 
 }
