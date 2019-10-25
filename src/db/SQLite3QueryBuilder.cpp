@@ -57,6 +57,7 @@ void SQLite3QueryBuilder::build()
 
         // Insert columns
         if (_cols.empty()) {
+            delete _vals;
             throw std::runtime_error("Columns must be specified.");
         } else {
             int num_cols = _cols.size();
@@ -139,5 +140,7 @@ void SQLite3QueryBuilder::build()
         _sql += "DELETE FROM " + table + " WHERE " + build_where(1);
 
     }
+
+    delete _vals;
 
 }

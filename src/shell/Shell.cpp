@@ -76,6 +76,7 @@ void Shell::update()
     ->opt_where({std::make_pair("owner", this->_username), std::make_pair("custodian", this->_username)});
 
     auto res = SQLite3Instance::getInstance()->query(query);
+    delete query;
 
     // Iterate through accounts
     for (auto &acct : *res->get_rows()) {
@@ -88,6 +89,8 @@ void Shell::update()
 
         // Iterate through transactions associated with account which aren't completed
         auto transactions = SQLite3Instance::getInstance()->query(query);
+        delete query;
+
         SQLite3QueryBuilder* transaction_query;
         for (auto &t : *transactions->get_rows()) {
 
@@ -120,6 +123,8 @@ void Shell::update()
 
                 if (SQLite3Instance::getInstance()->query(transaction_query) != nullptr)
                     SQLite3Instance::getInstance()->query(acct_query);
+
+                delete acct_query;
 
 
             }

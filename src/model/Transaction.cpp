@@ -20,6 +20,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
     ->values({vals});
 
     bool err = SQLite3Instance::getInstance()->query(query) == nullptr;
+    delete query;
 
     if (!err) {
 
@@ -41,6 +42,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
                     auto obj = from.get();
                     int new_amt = stoi(obj->get_row(0)->at(3)) - stoi(vals.at(1));
                     from.update({std::make_pair("balance", std::to_string(new_amt))});
+                    delete from_query;
                 }
 
                 // Update to account
@@ -50,6 +52,7 @@ bool Transaction::create(const std::vector<std::string> &vals)
                     auto obj = to.get();
                     int new_amt = stoi(obj->get_row(0)->at(3)) + stoi(vals.at(1));
                     to.update({std::make_pair("balance", std::to_string(new_amt))});
+                    delete to_query;
                 }
 
             } catch (std::runtime_error &e) {

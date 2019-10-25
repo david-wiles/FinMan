@@ -77,6 +77,8 @@ void SQLite3Instance::init_db()
                 initialized = false;
         }
 
+        delete tables;
+
         if (!initialized) {
             // Get SQL from file
             std::ifstream init_file("assets/data/db.sql");

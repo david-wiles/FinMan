@@ -10,5 +10,7 @@ bool Debt::create(const std::vector<std::string> &vals)
     auto query = new SQLite3QueryBuilder("debt");
     query->insert({"owner", "principal", "interest", "start_date", "maturity_date", "type", "from_acct"})->values({vals});
 
-    return SQLite3Instance::getInstance()->query(query) != nullptr;
+    bool res = SQLite3Instance::getInstance()->query(query) != nullptr;
+    delete query;
+    return res;
 }

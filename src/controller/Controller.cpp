@@ -191,6 +191,7 @@ int Controller::account(const std::string& username, const std::vector<std::stri
         }
 
         auto res = SQLite3Instance::getInstance()->query(query);
+        delete query;
         TableView::view(res);
 
         return 0;
@@ -227,8 +228,12 @@ int Controller::account(const std::string& username, const std::vector<std::stri
                     success = account.update({std::make_pair("owner", val)});
                 else if (opt == "--custodian")
                     success = account.update({std::make_pair("custodian", val)});
-                else
+                else {
+                    delete query;
                     return error_msg("Could not modify account with the given option.");
+                }
+
+                delete query;
 
                 if (success)
                     return 0;
@@ -262,6 +267,7 @@ int Controller::transaction(const std::string& username, const std::vector<std::
 
         auto res = SQLite3Instance::getInstance()->query(query);
         TableView::view(res);
+        delete query;
         return 0;
 
     } else if (action == "withdraw") {
@@ -363,6 +369,7 @@ int Controller::asset(const std::string& username, const std::vector<std::string
         }
 
         auto res = SQLite3Instance::getInstance()->query(query);
+        delete query;
         TableView::view(res);
 
         return 0;
@@ -379,6 +386,7 @@ int Controller::asset(const std::string& username, const std::vector<std::string
 
         Asset asset(query);
         asset.del();
+        delete query;
 
         return 0;
     } else if (action == "modify") {
@@ -396,9 +404,12 @@ int Controller::asset(const std::string& username, const std::vector<std::string
             success = asset.update({std::make_pair("value", val)});
         else if (opt == "--name")
             success = asset.update({std::make_pair("type", val)});
-        else
+        else {
+            delete query;
             return error_msg("Invalid option.");
+        }
 
+        delete query;
         if (success)
             return 0;
         else
@@ -496,6 +507,8 @@ int new_income(const std::string& username)
             valid = true;
         else
             std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+
+        delete query;
     }
 
     if (Income::create({username, type, hours, amount, pay_frequency, to_acct}))
@@ -525,7 +538,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 
         auto res = SQLite3Instance::getInstance()->query(query);
         TableView::view(res);
-
+        delete query;
         return 0;
 
     } else if (action == "add") {
@@ -544,7 +557,7 @@ int Controller::income(const std::string& username, const std::vector<std::strin
 
         Income income(query);
         income.del();
-
+        delete query;
         return 0;
 
     } else if (action == "modify") {
@@ -573,8 +586,10 @@ int Controller::income(const std::string& username, const std::vector<std::strin
         Income income(query);
 
         if (income.get()) {
-            if (income.update({std::make_pair(col, val)}))
+            if (income.update({std::make_pair(col, val)})) {
+                delete query;
                 return 0;
+            }
             else
                 return error_msg("Could not update income.");
         } else
@@ -663,6 +678,7 @@ int new_debt(const std::string& username)
             valid = true;
         else
             std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+        delete query;
     }
 
     if (Debt::create({username, principal, interest, start_date, maturity_date, type, from_acct}))
@@ -687,6 +703,7 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
         }
 
         TableView::view(SQLite3Instance::getInstance()->query(query));
+        delete query;
         return 0;
 
     } else if (action == "add") {
@@ -707,9 +724,12 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
 
         if (debt.get()) {
             debt.del();
+            delete query;
             return 0;
-        } else
+        } else {
+            delete query;
             return error_msg("The debt could not be found.");
+        }
 
     } else if (action == "modify") {
 
@@ -717,25 +737,28 @@ int Controller::debt(const std::string& username, const std::vector<std::string>
         std::string opt = get_param(&params, 3);
         std::string val = get_param(&params, 4);
 
+        if (id.empty())
+            return error_msg("A specific debt must be specified.");
         if (opt != "--from_acct")
             return error_msg("Could not update debt with the given arguments.");
 
         auto query = new SQLite3QueryBuilder("debt");
-
-        if (id.empty())
-            return error_msg("A specific debt must be specified.");
 
         query->where({std::make_pair("owner", username), std::make_pair("id", id)});
 
         Debt debt(query);
 
         if (debt.get()) {
-            if (debt.update({std::make_pair("from_acct", val)}))
+            if (debt.update({std::make_pair("from_acct", val)})){
+                delete query;
                 return 0;
-            else
+            } else
                 return error_msg("Could not update the debt.");
-        } else
+        } else {
+            delete query;
             return error_msg("Could not find the debt.");
+        }
+
     } else
         return error_msg("Invalid command.");
 }
@@ -808,6 +831,7 @@ int new_investment(const std::string& username)
             valid = true;
         else
             std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+        delete query;
     }
 
     if (Investment::create({username, type, ticker, buy_price, num_shares, buy_date, acct}))
@@ -834,6 +858,7 @@ int Controller::investment(const std::string& username, const std::vector<std::s
         }
 
         TableView::view(SQLite3Instance::getInstance()->query(query));
+        delete query;
         return 0;
     } else if (action == "add") {
 
@@ -853,9 +878,12 @@ int Controller::investment(const std::string& username, const std::vector<std::s
 
         if (investment.get()) {
             investment.del();
+            delete query;
             return 0;
-        } else
+        } else {
+            delete query;
             return error_msg("The investment could not be found.");
+        }
 
     } else if (action == "modify") {
 
@@ -887,6 +915,7 @@ int new_budget(const std::string& username)
         } else {
             std::cout << "Cannot create a budget for that user." << std::endl;
         }
+        delete params;
     }
 
     valid = false;
@@ -901,6 +930,8 @@ int new_budget(const std::string& username)
             valid = true;
         else
             std::cout << "That account number doesn't correspond to a valid account." << std::endl;
+
+        delete query;
     }
 
     valid = false;
@@ -944,6 +975,7 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
         }
 
         TableView::view(SQLite3Instance::getInstance()->query(query));
+        delete query;
         return 0;
     } else if (action == "add") {
 
@@ -963,9 +995,12 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
 
         if (budget.get()) {
             budget.del();
+            delete query;
             return 0;
-        } else
+        } else {
+            delete query;
             return error_msg("The budget could not be found.");
+        }
 
     } else if (action == "modify") {
 
@@ -989,12 +1024,17 @@ int Controller::budget(const std::string& username, const std::vector<std::strin
         Budget budget(query);
 
         if (budget.get()) {
-            if (budget.update({std::make_pair(col, val)}))
+            if (budget.update({std::make_pair(col, val)})) {
+                delete query;
                 return 0;
-            else
+            } else {
+                delete query;
                 return error_msg("Could not update the budget.");
-        } else
+            }
+        } else {
+            delete query;
             return error_msg("Could not find the budget.");
+        }
     } else
         return error_msg("Invalid command.");
 }
@@ -1030,7 +1070,11 @@ int Controller::family(const std::string &username, const std::vector<std::strin
 
             try {
                 id = id_row->get_row(0)->at(0);
+                delete param_id;
+                delete id_row;
             } catch (std::out_of_range &err) {
+                delete param_id;
+                delete id_row;
                 return error_msg("Family could not be found.");
             }
 
@@ -1039,6 +1083,8 @@ int Controller::family(const std::string &username, const std::vector<std::strin
             auto usernames = SQLite3Instance::getInstance()->query(get_usernames_sql, param_usernames);
 
             TableView::view(usernames);
+            delete param_usernames;
+            delete usernames;
             return 0;
 
         } catch (std::runtime_error &err) {
@@ -1049,10 +1095,13 @@ int Controller::family(const std::string &username, const std::vector<std::strin
 
         std::string sql = "INSERT INTO family (owner) VALUES ( ?1 );";
         auto args = new std::vector<std::string>{username};
-        if (SQLite3Instance::getInstance()->query(sql, args) != nullptr)
+        if (SQLite3Instance::getInstance()->query(sql, args) != nullptr) {
+            delete args;
             return 0;
-        else
+        } else {
+            delete args;
             return error_msg("Could not create family.");
+        }
 
     } else if (action == "add") {
 
@@ -1065,12 +1114,16 @@ int Controller::family(const std::string &username, const std::vector<std::strin
                 auto id_row = SQLite3Instance::getInstance()->query(get_id_sql, param_id);
                 std::string id = id_row->get_row(0)->at(0);
 
+                delete param_id;
+                delete id_row;
+
                 std::string add_sql = "UPDATE auth_user SET family_id = ?1 WHERE username = ?2;";
                 auto param_add = new std::vector<std::string>{id, addUser};
 
-                if (SQLite3Instance::getInstance()->query(add_sql, param_add) != nullptr)
+                if (SQLite3Instance::getInstance()->query(add_sql, param_add) != nullptr) {
+                    delete param_add;
                     return 0;
-                else
+                } else
                     return error_msg("Could not add user to family.");
             } catch (std::runtime_error &err) {
                 return error_msg("Could not add user to family.");
@@ -1090,13 +1143,19 @@ int Controller::family(const std::string &username, const std::vector<std::strin
                 auto id_row = SQLite3Instance::getInstance()->query(get_id_sql, param_id);
                 std::string id = id_row->get_row(0)->at(0);
 
+                delete param_id;
+                delete id_row;
+
                 std::string add_sql = "UPDATE auth_user SET family_id = '' WHERE username = ?1;";
                 auto param_add = new std::vector<std::string>{removeUser};
 
-                if (SQLite3Instance::getInstance()->query(add_sql, param_add) != nullptr)
+                if (SQLite3Instance::getInstance()->query(add_sql, param_add) != nullptr) {
                     return 0;
-                else
+                    delete param_add;
+                } else {
+                    delete param_add;
                     return error_msg("Could not remove user from family.");
+                }
             } catch (std::runtime_error &err) {
                 return error_msg("Could not remove user from family..");
             }

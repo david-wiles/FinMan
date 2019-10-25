@@ -114,6 +114,8 @@ std::string Auth::new_user()
 
             SQLite3Instance::getInstance()->query(query);
 
+            delete query;
+
             if (query_for_user(username, password))
                 return username;
             else
