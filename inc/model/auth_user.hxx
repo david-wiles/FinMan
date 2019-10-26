@@ -4,7 +4,6 @@
 #include <string>
 #include <memory>
 
-
 #include <odb/core.hxx>
 #include "family.hxx"
 
@@ -13,9 +12,9 @@
 class auth_user
 {
 public:
-    auth_user();
+    auth_user() = default;
 
-    ~auth_user();
+    ~auth_user() = default;
 
 private:
     friend class odb::access;

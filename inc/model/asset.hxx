@@ -12,8 +12,9 @@
 class asset
 {
 public:
-    asset();
+    asset() = default;
 
+    ~asset() = default;
 private:
     friend class odb::access;
 

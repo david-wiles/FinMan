@@ -2,5 +2,5 @@
 /cmake-build-debug/
 /.idea/
 /SQLite/
-/assets/data/data.db
+/data.db
 /test/test.db

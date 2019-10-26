@@ -5,16 +5,16 @@
 #include <vector>
 
 #include <odb/core.hxx>
-#include "transaction.hxx"
 #include "auth_user.hxx"
+
 
 #pragma db object
 class account
 {
 public:
-    account();
+    account() = default;
 
-    ~account();
+    ~account() = default;
 
 protected:
     friend class odb::access;
@@ -24,7 +24,6 @@ protected:
     double _balance;
     float _interest;
 
-    std::vector<lazy_shared_ptr<transaction>> _transactions;
     #pragma db not_null
     std::shared_ptr<auth_user> _owner;
     #pragma db not_null
@@ -35,9 +34,9 @@ protected:
 class retirement_account : public account
 {
 public:
-    retirement_account();
+    retirement_account() = default;
 
-    ~retirement_account();
+    ~retirement_account() = default;
 
 private:
     friend class odb::access;

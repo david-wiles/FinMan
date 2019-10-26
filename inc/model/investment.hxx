@@ -7,11 +7,12 @@
 #include "account.hxx"
 #include "auth_user.hxx"
 
+
 #pragma db object abstract
 class investment
 {
 public:
-    investment();
+    investment() = default;
 
     virtual ~investment() = 0;
 protected:
@@ -30,9 +31,9 @@ protected:
 class stock : public investment
 {
 public:
-    stock();
+    stock() = default;
 
-    ~stock();
+    ~stock() override = default;
 
 private:
     friend class odb::access;

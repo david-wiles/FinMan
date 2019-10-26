@@ -6,11 +6,12 @@
 #include <odb/core.hxx>
 #include "account.hxx"
 
+
 #pragma db object abstract
 class income
 {
 public:
-    income();
+    income() = default;
 
     virtual ~income() = 0;
 
@@ -29,9 +30,9 @@ protected:
 class salaried_income : public income
 {
 public:
-    salaried_income();
+    salaried_income() = default;
 
-    ~salaried_income();
+    ~salaried_income() override = default;
 
 private:
     friend class odb::access;
@@ -44,9 +45,9 @@ private:
 class hourly_income : public income
 {
 public:
-    hourly_income();
+    hourly_income() = default;
 
-    ~hourly_income();
+    ~hourly_income() override = default;
 
 private:
     friend class odb::access;

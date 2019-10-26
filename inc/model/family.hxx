@@ -10,7 +10,9 @@
 class family
 {
 public:
-    family();
+    family() = default;
+
+    ~family() = default;
 
 private:
     friend class odb::access;

@@ -4,9 +4,12 @@ project(PiggyBank)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${FinMan_SOURCE_DIR})
 
 include_directories(inc)
+include_directories(odb/inc)
 
 file(GLOB_RECURSE sources src/*.cpp src/*.cxx)
-add_executable(PiggyBank ${sources})
+file(GLOB_RECURSE odb-sources odb/src/*.cxx)
+
+add_executable(PiggyBank ${sources} ${odb-sources})
 
 #file(GLOB_RECURSE test_sources test/*.cpp test/catch.hpp)
 #add_executable(TEST ${sources} ${test_sources})

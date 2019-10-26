@@ -6,11 +6,12 @@
 #include <odb/core.hxx>
 #include "account.hxx"
 
+
 #pragma db object abstract
 class debt
 {
 public:
-    debt();
+    debt() = default;
 
     virtual ~debt() = 0;
 
@@ -32,9 +33,9 @@ protected:
 class mortgage : public debt
 {
 public:
-    mortgage();
+    mortgage() = default;
 
-    ~mortgage();
+    ~mortgage() = default;
 
 private:
     friend class odb::access;

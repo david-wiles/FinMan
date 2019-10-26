@@ -7,11 +7,14 @@
 #include <odb/lazy-ptr.hxx>
 #include "auth_user.hxx"
 
+
 #pragma db object
 class budget
 {
 public:
-    budget();
+    budget() = default;
+
+    ~budget() = default;
 
 private:
     friend class odb::access;
