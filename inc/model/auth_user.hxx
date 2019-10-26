@@ -9,20 +9,23 @@
 #include "family.hxx"
 
 
+#pragma db object
 class auth_user
 {
 public:
     auth_user();
 
+    ~auth_user();
+
 private:
     friend class odb::access;
 
+    #pragma db id
     std::string _username;
+    #pragma db not_null
     std::string _hash;
-//    std::shared_ptr<family> _family;
-};
 
-#pragma db object(auth_user)
-#pragma db member(auth_user::_username) id
+    std::shared_ptr<family> _family;
+};
 
 #endif //PIGGYBANK_AUTH_USER_HXX

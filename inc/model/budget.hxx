@@ -4,8 +4,10 @@
 #include <string>
 
 #include <odb/core.hxx>
+#include <odb/lazy-ptr.hxx>
 #include "auth_user.hxx"
 
+#pragma db object
 class budget
 {
 public:
@@ -14,14 +16,14 @@ public:
 private:
     friend class odb::access;
 
+    #pragma db id
     unsigned int _id;
-//    shared_ptr<auth_user> _user;
-//    shared_ptr<family> _family;
     double _amount;
     std::string description;
+
+    std::shared_ptr<auth_user> _user;
+    odb::lazy_shared_ptr<family> _family;
 };
 
-#pragma db object(budget)
-#pragma db member(budget::_id) id
 
 #endif //PIGGYBANK_BUDGET_HXX

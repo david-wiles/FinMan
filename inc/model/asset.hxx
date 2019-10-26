@@ -2,11 +2,13 @@
 #define PIGGYBANK_ASSET_HXX
 
 #include <string>
+#include <memory>
 
 #include <odb/core.hxx>
 #include "auth_user.hxx"
 
 
+#pragma db object
 class asset
 {
 public:
@@ -15,15 +17,13 @@ public:
 private:
     friend class odb::access;
 
+    #pragma db id
     unsigned int _id;
-//    shared_ptr<auth_user> _owner;
     double _value;
     std::string _name;
     std::string _type;
 
+    std::shared_ptr<auth_user> _owner;
 };
-
-#pragma db object(asset);
-#pragma db member(asset::_id) id
 
 #endif //PIGGYBANK_ASSET_HXX

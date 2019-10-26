@@ -6,6 +6,7 @@
 #include <odb/core.hxx>
 
 
+#pragma db object
 class family
 {
 public:
@@ -14,12 +15,13 @@ public:
 private:
     friend class odb::access;
 
+    #pragma db id
     unsigned int _id;
+
+    #pragma db not_null
     std::string _owner;
 
 };
 
-#pragma db object(family)
-#pragma db member(family::_id) id
 
 #endif //PIGGYBANK_FAMILY_HXX
