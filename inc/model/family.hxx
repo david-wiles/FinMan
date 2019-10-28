@@ -11,6 +11,7 @@ class family
 {
 public:
     family() = default;
+    family(std::string owner);
 
     ~family() = default;
 

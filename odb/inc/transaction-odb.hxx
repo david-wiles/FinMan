@@ -13,7 +13,7 @@
 
 #include <odb/pre.hxx>
 
-#include "model/transaction.hxx"
+#include "transaction.hxx"
 
 #include "account-odb.hxx"
 #include "auth_user-odb.hxx"
@@ -142,48 +142,6 @@ namespace odb
     static void
     callback (database&, const object_type&, callback_event);
   };
-
-  // transfer
-  //
-  template <>
-  struct class_traits< ::transfer >
-  {
-    static const class_kind kind = class_object;
-  };
-
-  template <>
-  class access::object_traits< ::transfer >
-  {
-    public:
-    typedef ::transfer object_type;
-    typedef ::transfer* pointer_type;
-    typedef odb::pointer_traits<pointer_type> pointer_traits;
-
-    static const bool polymorphic = false;
-
-    typedef unsigned int id_type;
-
-    static const bool auto_id = false;
-
-    static const bool abstract = false;
-
-    static id_type
-    id (const object_type&);
-
-    typedef
-    no_op_pointer_cache_traits<pointer_type>
-    pointer_cache_traits;
-
-    typedef
-    no_op_reference_cache_traits<object_type>
-    reference_cache_traits;
-
-    static void
-    callback (database&, object_type&, callback_event);
-
-    static void
-    callback (database&, const object_type&, callback_event);
-  };
 }
 
 #include <odb/details/buffer.hxx>
@@ -236,6 +194,18 @@ namespace odb
     description_type_;
 
     static const description_type_ description;
+
+    // new_acct_balance
+    //
+    typedef
+    sqlite::query_column<
+      sqlite::value_traits<
+        double,
+        sqlite::id_real >::query_type,
+      sqlite::id_real >
+    new_acct_balance_type_;
+
+    static const new_acct_balance_type_ new_acct_balance;
   };
 
   template <typename A>
@@ -252,6 +222,11 @@ namespace odb
   const typename query_columns< ::transaction, id_sqlite, A >::description_type_
   query_columns< ::transaction, id_sqlite, A >::
   description (A::table_name, "\"description\"", 0);
+
+  template <typename A>
+  const typename query_columns< ::transaction, id_sqlite, A >::new_acct_balance_type_
+  query_columns< ::transaction, id_sqlite, A >::
+  new_acct_balance (A::table_name, "\"new_acct_balance\"", 0);
 
   template <typename A>
   struct pointer_query_columns< ::transaction, id_sqlite, A >:
@@ -281,6 +256,11 @@ namespace odb
       details::buffer _description_value;
       std::size_t _description_size;
       bool _description_null;
+
+      // _new_acct_balance
+      //
+      double _new_acct_balance_value;
+      bool _new_acct_balance_null;
     };
 
     static bool
@@ -414,7 +394,7 @@ namespace odb
 
     typedef sqlite::query_base query_base_type;
 
-    static const std::size_t column_count = 5UL;
+    static const std::size_t column_count = 6UL;
     static const std::size_t id_column_count = 1UL;
     static const std::size_t inverse_column_count = 0UL;
     static const std::size_t readonly_column_count = 0UL;
@@ -589,7 +569,7 @@ namespace odb
 
     typedef sqlite::query_base query_base_type;
 
-    static const std::size_t column_count = 5UL;
+    static const std::size_t column_count = 6UL;
     static const std::size_t id_column_count = 1UL;
     static const std::size_t inverse_column_count = 0UL;
     static const std::size_t readonly_column_count = 0UL;
@@ -650,204 +630,6 @@ namespace odb
   template <>
   class access::object_traits_impl< ::deposit, id_common >:
     public access::object_traits_impl< ::deposit, id_sqlite >
-  {
-  };
-
-  // transfer
-  //
-  template <typename A>
-  struct pointer_query_columns< ::transfer, id_sqlite, A >:
-    pointer_query_columns< ::transaction, id_sqlite, A >
-  {
-    // transaction
-    //
-    typedef pointer_query_columns< ::transaction, id_sqlite, A > transaction;
-
-    // id
-    //
-    typedef
-    sqlite::query_column<
-      sqlite::value_traits<
-        unsigned int,
-        sqlite::id_integer >::query_type,
-      sqlite::id_integer >
-    id_type_;
-
-    static const id_type_ id;
-
-    // to_acct
-    //
-    typedef
-    sqlite::query_column<
-      sqlite::value_traits<
-        long int,
-        sqlite::id_integer >::query_type,
-      sqlite::id_integer >
-    to_acct_type_;
-
-    static const to_acct_type_ to_acct;
-
-    // from_acct
-    //
-    typedef
-    sqlite::query_column<
-      sqlite::value_traits<
-        long int,
-        sqlite::id_integer >::query_type,
-      sqlite::id_integer >
-    from_acct_type_;
-
-    static const from_acct_type_ from_acct;
-  };
-
-  template <typename A>
-  const typename pointer_query_columns< ::transfer, id_sqlite, A >::id_type_
-  pointer_query_columns< ::transfer, id_sqlite, A >::
-  id (A::table_name, "\"id\"", 0);
-
-  template <typename A>
-  const typename pointer_query_columns< ::transfer, id_sqlite, A >::to_acct_type_
-  pointer_query_columns< ::transfer, id_sqlite, A >::
-  to_acct (A::table_name, "\"to_acct\"", 0);
-
-  template <typename A>
-  const typename pointer_query_columns< ::transfer, id_sqlite, A >::from_acct_type_
-  pointer_query_columns< ::transfer, id_sqlite, A >::
-  from_acct (A::table_name, "\"from_acct\"", 0);
-
-  template <>
-  class access::object_traits_impl< ::transfer, id_sqlite >:
-    public access::object_traits< ::transfer >
-  {
-    public:
-    struct id_image_type
-    {
-      long long id_value;
-      bool id_null;
-
-      std::size_t version;
-    };
-
-    struct image_type: object_traits_impl< ::transaction, id_sqlite >::image_type
-    {
-      // _id
-      //
-      long long _id_value;
-      bool _id_null;
-
-      // _to_acct
-      //
-      long long _to_acct_value;
-      bool _to_acct_null;
-
-      // _from_acct
-      //
-      long long _from_acct_value;
-      bool _from_acct_null;
-
-      std::size_t version;
-    };
-
-    struct extra_statement_cache_type;
-
-    struct to_acct_tag;
-    struct from_acct_tag;
-
-    using object_traits<object_type>::id;
-
-    static id_type
-    id (const image_type&);
-
-    static bool
-    grow (image_type&,
-          bool*);
-
-    static void
-    bind (sqlite::bind*,
-          image_type&,
-          sqlite::statement_kind);
-
-    static void
-    bind (sqlite::bind*, id_image_type&);
-
-    static bool
-    init (image_type&,
-          const object_type&,
-          sqlite::statement_kind);
-
-    static void
-    init (object_type&,
-          const image_type&,
-          database*);
-
-    static void
-    init (id_image_type&, const id_type&);
-
-    typedef sqlite::object_statements<object_type> statements_type;
-
-    typedef sqlite::query_base query_base_type;
-
-    static const std::size_t column_count = 6UL;
-    static const std::size_t id_column_count = 1UL;
-    static const std::size_t inverse_column_count = 0UL;
-    static const std::size_t readonly_column_count = 0UL;
-    static const std::size_t managed_optimistic_column_count = 0UL;
-
-    static const std::size_t separate_load_column_count = 0UL;
-    static const std::size_t separate_update_column_count = 0UL;
-
-    static const bool versioned = false;
-
-    static const char persist_statement[];
-    static const char find_statement[];
-    static const char update_statement[];
-    static const char erase_statement[];
-    static const char query_statement[];
-    static const char erase_query_statement[];
-
-    static const char table_name[];
-
-    static void
-    persist (database&, const object_type&);
-
-    static pointer_type
-    find (database&, const id_type&);
-
-    static bool
-    find (database&, const id_type&, object_type&);
-
-    static bool
-    reload (database&, object_type&);
-
-    static void
-    update (database&, const object_type&);
-
-    static void
-    erase (database&, const id_type&);
-
-    static void
-    erase (database&, const object_type&);
-
-    static result<object_type>
-    query (database&, const query_base_type&);
-
-    static unsigned long long
-    erase_query (database&, const query_base_type&);
-
-    public:
-    static bool
-    find_ (statements_type&,
-           const id_type*);
-
-    static void
-    load_ (statements_type&,
-           object_type&,
-           bool reload);
-  };
-
-  template <>
-  class access::object_traits_impl< ::transfer, id_common >:
-    public access::object_traits_impl< ::transfer, id_sqlite >
   {
   };
 
@@ -1020,141 +802,6 @@ namespace odb
   const typename query_columns< ::deposit, id_sqlite, A >::to_acct_type_
   query_columns< ::deposit, id_sqlite, A >::
   to_acct (A::table_name, "\"to_acct\"", 0);
-
-  // transfer
-  //
-  template <>
-  struct alias_traits<
-    ::account,
-    id_sqlite,
-    access::object_traits_impl< ::transfer, id_sqlite >::to_acct_tag>
-  {
-    static const char table_name[];
-  };
-
-  template <>
-  struct alias_traits<
-    ::account,
-    id_sqlite,
-    access::object_traits_impl< ::transfer, id_sqlite >::from_acct_tag>
-  {
-    static const char table_name[];
-  };
-
-  template <>
-  struct query_columns_base< ::transfer, id_sqlite >
-  {
-    // to_acct
-    //
-    typedef
-    odb::alias_traits<
-      ::account,
-      id_sqlite,
-      access::object_traits_impl< ::transfer, id_sqlite >::to_acct_tag>
-    to_acct_alias_;
-
-    // from_acct
-    //
-    typedef
-    odb::alias_traits<
-      ::account,
-      id_sqlite,
-      access::object_traits_impl< ::transfer, id_sqlite >::from_acct_tag>
-    from_acct_alias_;
-  };
-
-  template <typename A>
-  struct query_columns< ::transfer, id_sqlite, A >:
-    query_columns_base< ::transfer, id_sqlite >,
-    query_columns< ::transaction, id_sqlite, A >
-  {
-    // transaction
-    //
-    typedef query_columns< ::transaction, id_sqlite, A > transaction;
-
-    // id
-    //
-    typedef
-    sqlite::query_column<
-      sqlite::value_traits<
-        unsigned int,
-        sqlite::id_integer >::query_type,
-      sqlite::id_integer >
-    id_type_;
-
-    static const id_type_ id;
-
-    // to_acct
-    //
-    typedef
-    sqlite::query_column<
-      sqlite::value_traits<
-        long int,
-        sqlite::id_integer >::query_type,
-      sqlite::id_integer >
-    to_acct_column_type_;
-
-    typedef
-    odb::query_pointer<
-      odb::pointer_query_columns<
-        ::account,
-        id_sqlite,
-        to_acct_alias_ > >
-    to_acct_pointer_type_;
-
-    struct to_acct_type_: to_acct_pointer_type_, to_acct_column_type_
-    {
-      to_acct_type_ (const char* t, const char* c, const char* conv)
-        : to_acct_column_type_ (t, c, conv)
-      {
-      }
-    };
-
-    static const to_acct_type_ to_acct;
-
-    // from_acct
-    //
-    typedef
-    sqlite::query_column<
-      sqlite::value_traits<
-        long int,
-        sqlite::id_integer >::query_type,
-      sqlite::id_integer >
-    from_acct_column_type_;
-
-    typedef
-    odb::query_pointer<
-      odb::pointer_query_columns<
-        ::account,
-        id_sqlite,
-        from_acct_alias_ > >
-    from_acct_pointer_type_;
-
-    struct from_acct_type_: from_acct_pointer_type_, from_acct_column_type_
-    {
-      from_acct_type_ (const char* t, const char* c, const char* conv)
-        : from_acct_column_type_ (t, c, conv)
-      {
-      }
-    };
-
-    static const from_acct_type_ from_acct;
-  };
-
-  template <typename A>
-  const typename query_columns< ::transfer, id_sqlite, A >::id_type_
-  query_columns< ::transfer, id_sqlite, A >::
-  id (A::table_name, "\"id\"", 0);
-
-  template <typename A>
-  const typename query_columns< ::transfer, id_sqlite, A >::to_acct_type_
-  query_columns< ::transfer, id_sqlite, A >::
-  to_acct (A::table_name, "\"to_acct\"", 0);
-
-  template <typename A>
-  const typename query_columns< ::transfer, id_sqlite, A >::from_acct_type_
-  query_columns< ::transfer, id_sqlite, A >::
-  from_acct (A::table_name, "\"from_acct\"", 0);
 }
 
 #include "../i/transaction-odb.ixx"

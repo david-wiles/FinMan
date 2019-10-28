@@ -13,6 +13,7 @@ class auth_user
 {
 public:
     auth_user() = default;
+    auth_user(std::string username, std::string hash);
 
     ~auth_user() = default;
 

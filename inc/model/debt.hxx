@@ -12,6 +12,7 @@ class debt
 {
 public:
     debt() = default;
+    debt(double principal, float interest, time_t start_date, time_t end_date);
 
     virtual ~debt() = 0;
 
@@ -22,7 +23,6 @@ protected:
     float _interest;
     time_t _start_date;
     time_t _end_date;
-    std::string _type;
 
     #pragma db not_null
     std::shared_ptr<account> _from_acct;

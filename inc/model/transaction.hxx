@@ -24,6 +24,8 @@ protected:
     time_t _datetime;
     #pragma db default("")
     std::string _description;
+    #pragma db default(0.0)
+    double _new_acct_balance;
 };
 
 // Transaction types
@@ -62,26 +64,6 @@ private:
 
     #pragma db not_null
     std::shared_ptr<account> _to_acct;
-};
-
-#pragma db object
-class transfer : public transaction
-{
-public:
-    transfer() = default;
-
-    ~transfer() override = default;
-
-private:
-    friend class odb::access;
-
-    #pragma db id
-    unsigned int _id;
-
-    #pragma db not_null
-    std::shared_ptr<account> _to_acct;
-    #pragma db not_null
-    std::shared_ptr<account> _from_acct;
 };
 
 #endif //PIGGYBANK_TRANSACTION_HXX

@@ -6,6 +6,7 @@
 
 #include <odb/core.hxx>
 #include "auth_user.hxx"
+#include "account.hxx"
 
 
 #pragma db object
@@ -13,6 +14,7 @@ class asset
 {
 public:
     asset() = default;
+    asset(double value, std::string name, std::string type);
 
     ~asset() = default;
 private:

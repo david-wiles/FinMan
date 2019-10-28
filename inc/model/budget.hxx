@@ -13,6 +13,7 @@ class budget
 {
 public:
     budget() = default;
+    budget(double amount, std::string description);
 
     ~budget() = default;
 

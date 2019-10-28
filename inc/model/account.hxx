@@ -13,6 +13,7 @@ class account
 {
 public:
     account() = default;
+    account(double balance, float interest);
 
     ~account() = default;
 
